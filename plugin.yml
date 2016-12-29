@@ -1,0 +1,21 @@
+name: Texter
+main: Texter\Main
+version: 1.5.2
+api:
+  - 2.0.0
+  - 3.0.0
+author: fuyutsuki
+website: https://twitter.com/y_fyi
+
+permissions:
+ texter.*:
+  default: op
+  description: "permission that allows player to use texter"
+  children:
+   texter.command.*:
+    default: op
+    description: "permission that allows player to use texter"
+    children:
+      texter.command.txt:
+        default: true
+        description: "permission that allows player to use texter"
