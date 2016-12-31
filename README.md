@@ -1,5 +1,9 @@
-Texter
-===============
+## Texter
+
+> Texter is plugin that displays and deletes FloatingTextPerticle supported to multi-world.
+
+***
+
 ## バグ報告について
 こちらでIssueを建てていただいてもかまいませんし、Twitterにて報告して頂いても構いません。
 
