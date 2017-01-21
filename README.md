@@ -13,6 +13,19 @@
 |浮き文字追加|`/txt add`|`txt add [タイトル] [テキスト]`|
 |浮き文字削除|`/txt remove`|`/txt remove [ID]`|
 
+## json記法
+
+``` json
+"0": {
+  "WORLD" : "world",
+  "Xvec" : 128,
+  "Yvec" : 90,
+  "Zvec" : 128,
+  "TITLE" : "タイトル",
+  "TEXT" : "テキスト"
+}
+```
+
 ## yml記法
 ```yaml
 1: #(数)
