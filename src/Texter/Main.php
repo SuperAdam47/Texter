@@ -44,16 +44,16 @@ use pocketmine\network\protocol\RemoveEntityPacket;
 
 # Utils
 use pocketmine\utils\UUID;
-use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as Color;
 
 #etc
 use Texter\commands\TxtCommand;
 use Texter\task\worldGetTask;
+use Texter\utils\tunedConfig as Config;
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v1.5.2';
+        VERSION = 'v1.5.5';
 
   /****************************************************************************/
   /**
@@ -66,27 +66,29 @@ class Main extends PluginBase implements Listener{
   private function initialize(){
     date_default_timezone_set("Asia/Tokyo");//時刻合わせ
     //
-    $dir = $this->getDataFolder();
-    $file1 = "crftps.yml";
-    $file2 = "ftps.yml";
+    $this->dir = $this->getDataFolder();
+    $this->file1 = "crftps.json";
+    $this->file2 = "ftps.json";
     //
-    if(!file_exists($dir)){
+    if(!file_exists($this->dir)){
       mkdir($dir);
     }
-    if(!file_exists($dir.$file1)){
-      file_put_contents($dir.$file1, $this->getResource($file1));
+    if(!file_exists($this->dir.$this->file1)){
+      file_put_contents($this->dir.$this->file1, $this->getResource($this->file1));
     }
-    if(!file_exists($dir.$file2)){
-      file_put_contents($dir.$file2, $this->getResource($file2));
+    if(!file_exists($this->dir.$this->file2)){
+      file_put_contents($this->dir.$this->file2, $this->getResource($this->file2));
     }
     //
-    $this->crftps_file = new Config($dir.$file1, Config::YAML);
+    $this->crftps_file = new Config($this->dir.$this->file1, Config::JSON);
     $this->crftps = $this->crftps_file->getAll();
     //
-    $this->ftps = new Config($dir.$file2, Config::YAML);
+    $this->ftps = new Config($this->dir.$this->file2, Config::JSON);
     $this->ftp = $this->ftps->getAll();
     //
     $this->registerCommands();
+    //
+    $this->YamlToJson();
   }
 
   /**
@@ -101,6 +103,39 @@ class Main extends PluginBase implements Listener{
       $map->register("Texter", new $class($this));
     }
     return true;
+  }
+
+  /**
+   * yaml->json処理
+   */
+  private function YamlToJson(){
+    #crftps.json
+    if (is_dir($this->dir) and $handle = opendir($this->dir)) {
+      while (($file = readdir($handle)) !== false) {
+        if (filetype($path = $this->dir.$file)) {
+          switch ($file) {
+            case "crftps.yml":
+            case "config.yml":
+              $oldyml1 = new Config($path, Config::YAML);
+              $oldData1 = $oldyml1->getAll();
+              $this->crftps_file->setAll($oldData1);
+              $this->crftps_file->save();
+              unlink($path);
+              $this->getLogger()->info(Color::GREEN."[ crftps.yml -> crftps.json ] データ移動が完了しました。");
+            break;
+
+            case 'ftps.yml':
+              $oldyml2 = new Config($path, Config::YAML);
+              $oldData2 = $oldyml2->getAll();
+              $this->ftps->setAll($oldData2);
+              $this->ftps->save();
+              unlink($path);
+              $this->getLogger()->info(Color::GREEN."[ ftps.yml -> ftps.json ] データ移動が完了しました。");
+            break;
+          }
+        }
+      }
+    }
   }
 
   /**
