@@ -139,6 +139,7 @@ class Main extends PluginBase implements Listener{
               $oldData1 = $oldyml1->getAll();
               $this->crftps_file->setAll($oldData1);
               $this->crftps_file->save();
+              $this->crftps = $oldData1;
               unlink($path);
               $this->getLogger()->info(Color::GREEN."[ crftps.yml -> crftps.json ] データ移動が完了しました。");
             break;
@@ -148,6 +149,7 @@ class Main extends PluginBase implements Listener{
               $oldData2 = $oldyml2->getAll();
               $this->ftps->setAll($oldData2);
               $this->ftps->save();
+              $this->ftp = $oldData2;
               unlink($path);
               $this->getLogger()->info(Color::GREEN."[ ftps.yml -> ftps.json ] データ移動が完了しました。");
             break;
