@@ -1,0 +1,28 @@
+{
+  "on.enable": "が読み込まれました。",
+  "on.disable": "が無効化されました",
+  "lang.registered": "言語を{lang}に設定しました",
+
+  "commands.registered": "コマンドを使用可能に設定しました",
+  "commands.unavailable": "コマンドを使用不能に設定しました",
+
+  "exchange.data": "データ移動が完了しました。",
+
+  "warning.version?": "バージョンの変更を検知しました。バグが発生した場合、製作者は一切の責任を負いません。",
+
+  "update.unnecessary": "最新バージョン: v{curver} / アップデートは必要ありません",
+  "update.available.1": "最新バージョン: v{newver} / 現在のバージョン: v{curver}",
+  "update.available.2": "アップデートが利用可能です。",
+  "update.available.3": "URL: {url}",
+
+  "world.not.exists": "記載されたワールド名 {world} は存在しません。",
+
+  "command.description": "浮き文字を表示、削除します。",
+  "command.txt.usage": "使用方法: /txt add [タイトル] [メッセージ(改行したい場合は§6#§b)]",
+  "command.txt.set": "浮き文字を設置しました。",
+  "command.txt.remove": "浮き文字を削除しました。",
+  "command.txt.exists": "この位置には別の人の浮き文字が存在します。",
+  "command.txt.permission": "この浮き文字を消す権限がありません。",
+  "command.txt.id?": "浮き文字のID§bを指定してください。",
+  "command.txt.console": "ゲーム内から使用してください。"
+}

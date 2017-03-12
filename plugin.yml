@@ -1,6 +1,6 @@
 name: Texter
 main: Texter\Main
-version: 1.5.5
+version: 1.6.0
 api:
   - 2.0.0
   - 3.0.0
@@ -17,5 +17,5 @@ permissions:
     description: "permission that allows player to use texter"
     children:
       texter.command.txt:
-        default: true
+        default: op
         description: "permission that allows player to use texter"

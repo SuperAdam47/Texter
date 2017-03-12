@@ -1,0 +1,17 @@
+# eng guide
+# 日本語 ガイド
+
+# Texter config file
+# Texter 設定ファイル
+
+# set language (jpn or eng)
+# 言語を設定してください
+lang: jpn
+
+# When set to true, update notification is displayed at startup
+# もし起動時にアップデートの通知が必要ならtrue, 必要ないならfalseにしてください
+checkUpdate: true
+
+# If you want to disable the command, prease set it to false
+# コマンドを使用不可にしたい場合はfalseにしてください
+canUseCommands: true

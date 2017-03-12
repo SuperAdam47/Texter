@@ -1,0 +1,28 @@
+{
+  "on.enable": "Enabled.",
+  "on.disable": "Disabled.",
+  "lang.registered": "language set to {lang}",
+
+  "commands.registered": "Command set to enabled",
+  "commands.unavailable": "Command set to disabled",
+
+  "exchange.data": "Data movement completed.",
+
+  "warning.version?": "Detected version change, you may not be able to receive support.",
+
+  "update.unnecessary": "Newest version: v{curver} / No update required.",
+  "update.available.1": "Newest version: v{newver} / Current version: v{curver}",
+  "update.available.2": "Update is available.",
+  "update.available.3": "URL: {url}",
+
+  "world.not.exists": "The listed world ({world}) does not exist.",
+
+  "command.description": "Add and remove floating texts.",
+  "command.txt.usage": "Usage: /txt add [title] [message (When breaking a line, §6#§b)]",
+  "command.txt.set": "Placed floating text.",
+  "command.txt.remove": "Removed floating text.",
+  "command.txt.exists": "There is another person's floating text at this position",
+  "command.txt.permission": "You don`t have permission to erase the specified floating text.",
+  "command.txt.id?": "Please specify id of floating text.",
+  "command.txt.console": "Please use from within game"
+}
