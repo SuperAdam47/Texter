@@ -103,7 +103,7 @@ class Main extends PluginBase implements Listener{
     $this->file3 = "ftps.json";
     //
     if(!file_exists($this->dir)){
-      mkdir($dir);
+      mkdir($this->dir);
     }
     if(!file_exists($this->dir.$this->conf)){
       file_put_contents($this->dir.$this->conf, $this->getResource($this->conf));
