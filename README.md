@@ -4,13 +4,17 @@ Texter is plugin that displays and deletes FloatingTextPerticle supported to mul
 ***
 ## English
 About bug report  
-Please report Issue or report it on Twitter.
+Please report on Issue tracker or report it on Twitter.
 
 ## Commands
-|   |command|usage|
+| \ |command|usage|
 |:--:|:--:|:--:|
-|浮き文字追加|`/txt add`|`txt add [title] [text]`|
-|浮き文字削除|`/txt remove`|`/txt remove [ID]`|
+|Add text|`/txt add`|`txt add [title] [text]`|
+|Remove text|`/txt remove`|`/txt remove [ID]`|
+|Update text|`/txt update`|`/txt update [title, text] [ID] [message]`|
+|Help|`/txt or /txt help`|
+
+**Please use `#` for line breaks.**
 
 ## json notation
 
@@ -21,19 +25,26 @@ Please report Issue or report it on Twitter.
   "Yvec" : 90,
   "Zvec" : 128,
   "TITLE" : "title",
-  "TEXT" : "1stLine#2ndLine..."
+  "TEXT" : "1st Line#2nd Line..."
 }
 ```
+It is output as follows.  
+<img src="https://cloud.githubusercontent.com/assets/16377174/24609877/642d64f6-18b7-11e7-9b38-488e0ada3f1e.JPG" width="320px">
+
 ***
-## Japanese
+## 日本語
 バグ報告について  
 こちらでIssueを建てていただいてもかまいませんし、Twitterにて報告して頂いても構いません。
 
 ## コマンド
-|   |コマンド|使い方|
+| \ |コマンド|使用方法|
 |:--:|:--:|:--:|
 |浮き文字追加|`/txt add`|`txt add [タイトル] [テキスト]`|
 |浮き文字削除|`/txt remove`|`/txt remove [ID]`|
+|浮き文字更新|`/txt update`|`/txt update [title, text] [ID] [メッセージ]`|
+|help|`/txt or /txt help`|
+
+**改行の際には `#` を使用してください。**
 
 ## json記法
 
@@ -43,7 +54,10 @@ Please report Issue or report it on Twitter.
   "Xvec" : 128,
   "Yvec" : 90,
   "Zvec" : 128,
-  "TITLE" : "タイトル",
-  "TEXT" : "1行目#2行目..."
+  "TITLE" : "title",
+  "TEXT" : "1st Line#2nd Line"
 }
 ```
+
+こう書くことで以下のように出力されます。  
+<img src="https://cloud.githubusercontent.com/assets/16377174/24609877/642d64f6-18b7-11e7-9b38-488e0ada3f1e.JPG" width="320px">
