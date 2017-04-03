@@ -16,7 +16,7 @@ use Texter\Main;
 class TxtCommand extends Command{
 
   public function __construct(Main $plugin){
-    parent::__construct("txt", $plugin->messages->get("command.description"), "/txt add | remove");//登録
+    parent::__construct("txt", $plugin->messages->get("command.description"), "/txt add | remove | update | help");//登録
     //
     $this->setPermission("texter.command.txt");
     $this->plugin = $plugin;
@@ -33,14 +33,15 @@ class TxtCommand extends Command{
             $lev = $s->getLevel();
             $levn = $lev->getName();
             $n = $s->getName();
-            $args[1] = str_replace("#", "\n", $args[1]);
+            $title = str_replace("#", "\n", $args[1]);
             if (isset($args[2])) {
-              $args[2] = str_replace("#", "\n", $args[2]);
+              $texts = array_slice($args, 2);
+              $text = str_replace("#", "\n", implode(" ", $texts));
             }else {
-              $args[2] = "";
+              $text = "";
             }
             $pos = [sprintf('%0.1f', $s->x), sprintf('%0.1f', $s->y+1), $z = sprintf('%0.1f', $s->z)];
-            $eid = $this->plugin->addFtp($s, $pos, $args[1], $args[2], $n);
+            $eid = $this->plugin->api->addFtp($s, $pos, $title, $text, $n);
             //
             $key = $levn.$pos[2].$pos[0].$pos[1];
             if (!$this->plugin->ftps_file->exists($key)) {
@@ -49,18 +50,21 @@ class TxtCommand extends Command{
                 "Xvec" => $pos[0],
                 "Yvec" => $pos[1],
                 "Zvec" => $pos[2],
-                "TITLE" => $args[1],
-                "TEXT" => $args[2],
+                "TITLE" => $title,
+                "TEXT" => $text,
                 "OWNER" => $n
               ]);
               $this->plugin->ftps_file->save();
               $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.set"));
+              return true;
             }else{
-              $this->plugin->removeFtp($s, $eid);
-              $s->sendMessage("§e[Texter] ".$this->plugin->messages->get("command.txt.exists"));
+              $this->plugin->api->removeFtp($s, $eid);
+              $s->sendMessage("§b[Texter] §e".$this->plugin->messages->get("command.txt.exists"));
+              return true;
             }
           }else {
-            $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage"));
+            $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage.add"));
+            return false;
           }
           break;
 
@@ -71,7 +75,7 @@ class TxtCommand extends Command{
               if ($k == $levn) {
                 foreach ($ftps as $fk => $ftp) {
                   if ($ftp->eid == $args[1]) {
-                    if ($ftp->owner === $s->getName() or $s->isOp()) {
+                    if ($ftp->owner === $s->getName() || $s->isOp()) {
                       $ckey = $levn.$ftp->z.$ftp->x.$ftp->y;
                       if ($this->plugin->ftps_file->exists($ckey)) {
                         $this->plugin->ftps_file->remove($ckey);
@@ -79,26 +83,62 @@ class TxtCommand extends Command{
                       }
                       unset($this->plugin->ftp[$k][$fk]);
                       @$this->plugin->ftp[$k] = array_values($this->plugin->ftp[$k]);
-                      $this->plugin->removeFtp($s, $ftp->eid);
+                      $this->plugin->api->removeFtp($s, $ftp->eid);
                       $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.remove"));
+                      return true;
                     }else {
-                      $s->sendMessage("§b[Texter] §c".$this->plugin->messages->get("command.txt.permission"));
+                      $s->sendMessage("§b[Texter] §c".$this->plugin->messages->get("command.txt.permission.remove"));
+                      return false;
                     }
                   }
                 }
               }
             }
           }else {
-            $s->sendMessage("§b[Texter] §7".$this->plugin->messages->get("command.txt.id?"));
+            $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage.remove"));
           }
           break;
 
+          case 'update':
+          if (isset($args[1]) &&//title or text
+              isset($args[2]) &&//id
+              isset($args[3])) {//文字列
+            switch (strtolower($args[1])) {
+              case 'title':
+                if (!is_numeric($args[2])) {
+                  $s->sendMessage("§b[Texter] §7".$this->plugin->messages->get("command.txt.usage.update"));
+                }else {
+                  $this->plugin->api->updateTitle($s, $args[2], $args[3]);
+                }
+              break;
+
+              case 'text':
+              if (!is_numeric($args[2])) {
+                $s->sendMessage("§b[Texter] §7".$this->plugin->messages->get("command.txt.usage.update"));
+              }else {
+                $this->plugin->api->updateText($s, $args[2], array_slice($args, 3));
+              }
+              break;
+
+              default:
+                $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage.update"));
+              break;
+            }
+          }else {
+            $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage.update"));
+          }
+          break;
+
+          case 'help':
+            $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage.line1")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.add")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.remove")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.update")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.indent")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.line2")."\n");
+          break;
+
           default:
-          $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage"));
+            $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage.line1")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.add")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.remove")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.update")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.indent")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.line2")."\n");
           break;
         }
       }else {
-        $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage"));
+        $s->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.usage.line1")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.add")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.remove")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.update")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.indent")."\n§b[Texter] ".$this->plugin->messages->get("command.txt.usage.line2")."\n");
       }
     }else {
       $this->plugin->getLogger()->info("§c[Texter] ".$this->plugin->messages->get("command.txt.console"));

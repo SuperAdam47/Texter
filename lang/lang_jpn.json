@@ -17,12 +17,21 @@
 
   "world.not.exists": "記載されたワールド名 {world} は存在しません。",
 
-  "command.description": "浮き文字を表示、削除します。",
-  "command.txt.usage": "使用方法: /txt add [タイトル] [メッセージ(改行したい場合は§6#§b)]",
+  "command.description": "浮き文字を操作します。",
+
+  "command.txt.usage.line1": "============使用方法============",
+  "command.txt.usage.add": "/txt add [タイトル] [メッセージ]",
+  "command.txt.usage.remove": "/txt remove [ID]",
+  "command.txt.usage.update": "/txt update title | text [ID] [テキスト]",
+  "command.txt.usage.indent": "改行したい場合は§6#§bを挿入",
+  "command.txt.usage.line2": "===============================",
+
   "command.txt.set": "浮き文字を設置しました。",
   "command.txt.remove": "浮き文字を削除しました。",
+  "command.txt.updated": "浮き文字を更新しました。",
   "command.txt.exists": "この位置には別の人の浮き文字が存在します。",
-  "command.txt.permission": "この浮き文字を消す権限がありません。",
-  "command.txt.id?": "浮き文字のID§bを指定してください。",
+  "command.txt.exists?.ftp": "指定されたIDの浮き文字がファイルに存在しません。\nこのエラーが出た場合、スクリーンショットを送ってください",
+  "command.txt.permission.remove": "この浮き文字を消す権限がありません。",
+  "command.txt.permission.update": "指定された浮き文字を更新する権限がありません。",
   "command.txt.console": "ゲーム内から使用してください。"
 }

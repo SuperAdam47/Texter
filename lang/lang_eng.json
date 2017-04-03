@@ -3,8 +3,8 @@
   "on.disable": "Disabled.",
   "lang.registered": "language set to {lang}",
 
-  "commands.registered": "Command set to enabled",
-  "commands.unavailable": "Command set to disabled",
+  "commands.registered": "Command set to enabled.",
+  "commands.unavailable": "Command set to disabled.",
 
   "exchange.data": "Data movement completed.",
 
@@ -17,12 +17,21 @@
 
   "world.not.exists": "The listed world ({world}) does not exist.",
 
-  "command.description": "Add and remove floating texts.",
-  "command.txt.usage": "Usage: /txt add [title] [message (When breaking a line, §6#§b)]",
+  "command.description": "Operate floating texts.",
+
+  "command.txt.usage.line1": "============Usage============",
+  "command.txt.usage.add": "/txt add [title] [message]",
+  "command.txt.usage.remove": "/txt remove [ID]",
+  "command.txt.usage.update": "/txt update title | text [ID] [message]",
+  "command.txt.usage.indent": "When breaking a line, insert §6#§b",
+  "command.txt.usage.line2": "=============================",
+
   "command.txt.set": "Placed floating text.",
   "command.txt.remove": "Removed floating text.",
+  "command.txt.updated": "Updated floating text.",
   "command.txt.exists": "There is another person's floating text at this position",
-  "command.txt.permission": "You don`t have permission to erase the specified floating text.",
-  "command.txt.id?": "Please specify id of floating text.",
+  "command.txt.exists?.ftp": "The specified ID does not exist.\nPlease send a screenshot to Twitter @y_fyi.",
+  "command.txt.permission.remove": "You don`t have permission to erase the specified floating text.",
+  "command.txt.permission.update": "You don`t have permission to update the specified floating text.",
   "command.txt.console": "Please use from within game"
 }

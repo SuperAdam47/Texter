@@ -1,9 +1,10 @@
 name: Texter
 main: Texter\Main
-version: 1.6.0
+version: 1.6.2
 api:
   - 2.0.0
   - 3.0.0
+  - 3.0.0-ALPHA5
 author: fuyutsuki
 website: https://twitter.com/y_fyi
 

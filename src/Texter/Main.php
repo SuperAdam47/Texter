@@ -54,43 +54,108 @@ use pocketmine\command\CommandExecutor;
 #Scheduler
 use pocketmine\scheduler\PluginTask;
 
-#Network
-use pocketmine\network\protocol\AddEntityPacket;
-use pocketmine\network\protocol\RemoveEntityPacket;
-
 # Utils
 use pocketmine\utils\UUID;
 use pocketmine\utils\TextFormat as Color;
 
 #etc
+use Texter\TexterAPI;
 use Texter\commands\TxtCommand;
 use Texter\task\worldGetTask;
 use Texter\utils\tunedConfig as Config;
 
+#Extensions
+// TODO: ver1.6.5
+
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
         //NOTE: このバージョンを変えた場合、正常な動作をしない場合があります
-        VERSION = 'v1.6.0';
+        VERSION = 'v1.6.2';
+
+  /* @var Extensions */
+  private $extensions = [];
+
+  /****************************************************************************/
+  /**
+   * Public APIs
+   */
+  /**
+   * @return Texter API
+   */
+  public function getAPI(){
+    return $this->api;
+  }
+
+  /**
+   * @return array [
+   *                "1" => AddEntityPacket
+   *                "2" => RemoveEntityPacket
+   *               ]
+   */
+  public function getPacketModel(){
+    return [$this->AddEntityPacket, $this->RemoveEntityPacket];
+  }
+
+  /**
+   * @return Extension
+   * TODO
+   */
+  /*
+  public function getExtension(string $key){
+    if (isset($this->extensions[$key])) {
+      return $this->extensions[$key];
+    }else {
+      return false;
+    }
+  }
+  */
 
   /****************************************************************************/
   /**
    * Private APIs
    */
-
   /**
    * 初期化処理
    */
   private function initialize(){
-    date_default_timezone_set("Asia/Tokyo");//時刻合わせ
     try {
+      $this->checkServer();
+      $this->initAPI();
       $this->checkFiles();
       $this->registerCommands();
       $this->YamlToJson();
+      $this->loadExtensions();
       $this->checkUpdate();
       $this->preparePacket();
+      date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
     } catch (Exception $e) {
       $this->getLogger()->critical($e->getMessage());
     }
+  }
+
+  /**
+   * サーバー確認(パス変更の為)
+   */
+  private function checkServer(){
+    $serverName = strtolower($this->getServer()->getName());
+    switch ($serverName) {
+      case 'pocketmine-mp':
+        $this->AddEntityPacket = new \pocketmine\network\mcpe\protocol\AddEntityPacket();
+        $this->RemoveEntityPacket = new \pocketmine\network\mcpe\protocol\RemoveEntityPacket();
+      break;
+
+      default:
+        $this->AddEntityPacket = new \pocketmine\network\protocol\AddEntityPacket();
+        $this->RemoveEntityPacket = new \pocketmine\network\protocol\RemoveEntityPacket();
+      break;
+    }
+  }
+
+  /**
+   * API初期化
+   */
+  private function initAPI(){
+    $this->api = new TexterAPI($this);
   }
 
   /**
@@ -120,7 +185,7 @@ class Main extends PluginBase implements Listener{
     // lang_{$this->lang}.json
     $this->file1 = "lang_{$this->lang}.json";
     $this->messages = new Config(__DIR__."/../../lang/{$this->file1}", Config::JSON);
-    $this->getLogger()->info(str_replace("{lang}", $this->lang, $this->messages->get("lang.registered")));
+    $this->getLogger()->info("§a".str_replace("{lang}", $this->lang, $this->messages->get("lang.registered")));
     // crftps.json
     $this->crftps_file = new Config($this->dir.$this->file2, Config::JSON);
     $this->crftps = $this->crftps_file->getAll();
@@ -181,6 +246,13 @@ class Main extends PluginBase implements Listener{
   }
 
   /**
+   * 拡張ファイル読み込み
+   */
+  private function loadExtensions(){
+    // TODO: ver1.6.5
+  }
+
+  /**
    * アップデート確認
    */
   private function checkUpdate(){
@@ -219,6 +291,12 @@ class Main extends PluginBase implements Listener{
         $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $curver], $this->messages->get("update.available.1")));
         $this->getLogger()->notice($this->messages->get("update.available.2"));
         $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
+      }
+    }else {
+      $curver = str_replace("v", "", self::VERSION);
+      if ($this->getDescription()->getVersion() !== $curver) {
+        $this->getLogger()->warning($this->messages->get("warning.version?"));
+        $flag = 0;
       }
     }
   }
@@ -261,20 +339,12 @@ class Main extends PluginBase implements Listener{
    * crftp送信準備
    */
   private function makeCrftp(array $pos, string $title, string $text, string $levelname){
-    $this->entityId = Entity::$entityCount++;
-    $pk = new AddEntityPacket();
-    $pk->eid = $this->entityId;
+    $pk = clone $this->AddEntityPacket;
+    $pk->eid = ++Entity::$entityCount;
     $pk->type = ItemEntity::NETWORK_ID;
     $pk->x = $pos[0];
     $pk->y = $pos[1];
     $pk->z = $pos[2];
-    $pk->speedX = 0;
-    $pk->speedY = 0;
-    $pk->speedZ = 0;
-    $pk->yaw = 0;
-    $pk->pitch = 0;
-    $pk->item = 0;
-    $pk->meta = 0;
     $flags = 0;
     $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
     $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
@@ -291,20 +361,12 @@ class Main extends PluginBase implements Listener{
    * ftp送信準備
    */
   private function makeFtp(array $pos, string $title, string $text, string $levelname, string $ownername){
-    $this->entityId = Entity::$entityCount++;
-    $pk = new AddEntityPacket();
-    $pk->eid = $this->entityId;
+    $pk = clone $this->AddEntityPacket;
+    $pk->eid = ++Entity::$entityCount;
     $pk->type = ItemEntity::NETWORK_ID;
     $pk->x = $pos[0];
     $pk->y = $pos[1];
     $pk->z = $pos[2];
-    $pk->speedX = 0;
-    $pk->speedY = 0;
-    $pk->speedZ = 0;
-    $pk->yaw = 0;
-    $pk->pitch = 0;
-    $pk->item = 0;
-    $pk->meta = 0;
     $flags = 0;
     $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
     $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
@@ -314,6 +376,7 @@ class Main extends PluginBase implements Listener{
       Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
       Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
     ];
+    $pk->world = $levelname;
     $pk->owner = $ownername;
     $this->ftp[$levelname][] = $pk;
   }
@@ -322,124 +385,13 @@ class Main extends PluginBase implements Listener{
    * ワールド変更時のdespawn処理
    *
    * @param Player $player
-   * @param string $eid
+   * @param int $eid
    */
   private function removeWorldChangeFtp(Player $player, string $eid){
-    $rpk = new RemoveEntityPacket();
+    $rpk = clone $this->RemoveEntityPacket;
     $rpk->eid = $eid;
 
     $player->dataPacket($rpk);
-  }
-
-  /****************************************************************************/
-  /**
-   * Public APIs
-   */
-
-  /**
-   * 消すことのできない浮き文字を追加します
-   *
-   * @param Player $player
-   * @param array $pos
-   * @param string $title
-   * @param string $text
-   */
-  public function addCrftp(Player $player, array $pos, string $title, string $text){
-    $levelname = $p->getLevel()->getName();
-    $this->entityId = Entity::$entityCount++;
-    $pk = new AddEntityPacket();
-    $pk->eid = $this->entityId;
-    $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = $pos[0];
-    $pk->y = $pos[1];
-    $pk->z = $pos[2];
-    $pk->speedX = 0;
-    $pk->speedY = 0;
-    $pk->speedZ = 0;
-    $pk->yaw = 0;
-    $pk->pitch = 0;
-    $pk->item = 0;
-    $pk->meta = 0;
-    $flags = 0;
-    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
-    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
-    $pk->metadata = [
-      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
-    ];
-    $this->crftp[$levelname][] = $pk;
-    $player->dataPacket($pk);
-  }
-
-  /**
-   * 浮き文字を追加します
-   *
-   * @param Player $player
-   * @param array $pos
-   * @param string $title
-   * @param string $text
-   * @param string $ownername
-   */
-  public function addFtp(Player $player, array $pos, string $title, string $text, string $ownername){
-    $level = $player->getLevel();
-    $levelname = $level->getName();
-    $this->entityId = Entity::$entityCount++;
-    $pk = new AddEntityPacket();
-    $pk->eid = $this->entityId;
-    $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = $pos[0];
-    $pk->y = $pos[1];
-    $pk->z = $pos[2];
-    $pk->speedX = 0;
-    $pk->speedY = 0;
-    $pk->speedZ = 0;
-    $pk->yaw = 0;
-    $pk->pitch = 0;
-    $pk->item = 0;
-    $pk->meta = 0;
-    $flags = 0;
-    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
-    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
-    $pk->metadata = [
-      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
-    ];
-    $pk->owner = $ownername;
-    $this->ftp[$levelname][] = $pk;//オリジナルを保存
-
-    $players = $level->getPlayers();
-    foreach ($players as $pl) {
-      $n = $pl->getName();
-      if ($n === $ownername or $pl->isOp()) {
-        $pks = clone $pk;//送信用パケット複製
-        $pks->metadata[4][1] = "[$this->entityId] ".$pks->metadata[4][1];
-        $pl->dataPacket($pks);
-      }else {
-        $pl->dataPacket($pk);
-      }
-    }
-    return $this->entityId;
-  }
-
-  /**
-   * 指定IDの浮き文字を削除します
-   *
-   * @param Player $player
-   * @param string $id
-   */
-  public function removeFtp(Player $player, string $id){
-    $pk = new RemoveEntityPacket();
-    $pk->eid = $id;
-    $level = $player->getLevel();
-    $levelname = $level->getName();
-    $players = $level->getPlayers();//Levelにいる人を取得
-    foreach ($players as $pl) {
-      $pl->dataPacket($pk);
-    }
   }
 
   /****************************************************************************/
@@ -455,26 +407,9 @@ class Main extends PluginBase implements Listener{
 
   public function onJoin(PlayerJoinEvent $e){
     $p = $e->getPlayer();
-    $lev = $p->getLevel();
-    $levn = $lev->getName();
     //
-    if (isset($this->crftp[$levn])) {
-      foreach ($this->crftp[$levn] as $pk) {
-        $p->dataPacket($pk);
-      }
-    }
-    if (isset($this->ftp[$levn])) {
-      $n = $p->getName();
-      foreach ($this->ftp[$levn] as $pk) {
-        if ($n === $pk->owner or $p->isOp()) {
-          $pks = clone $pk;
-          $pks->metadata[4][1] = "[$pks->eid] ".$pks->metadata[4][1];
-          $p->dataPacket($pks);
-        }else {
-          $p->dataPacket($pk);
-        }
-      }
-    }
+    $task = new worldGetTask($this, $p);
+    $this->getServer()->getScheduler()->scheduleDelayedTask($task, 20);
   }
 
   public function onLevelChange(EntityLevelChangeEvent $e){
