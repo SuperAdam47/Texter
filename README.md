@@ -31,6 +31,24 @@ Please report on Issue tracker or report it on Twitter.
 It is output as follows.  
 <img src="https://cloud.githubusercontent.com/assets/16377174/24609877/642d64f6-18b7-11e7-9b38-488e0ada3f1e.JPG" width="320px">
 
+## About extension
+Recognize by configuring the following file structure (please implement TexterExtension.php).  
+for Example (<https://github.com/fuyutsuki/Texter-ExtensionTemplete>)
+```
+PMMP-Texter/
+　└ src/
+　 　└ Texter/
+　 　　　├ commands/
+　 　　　├ extensions/
+　 　　　|　　　├ {extensionName}/
+　 　　　|　　　|　　　└ {MainFile}.php
+　 　　　|　　　└ TexterExtension.php
+　 　　　├ task/
+　 　　　├ utils/
+　　　　 ├ Main.php
+　　　　 └ TexterAPI.php
+```
+
 ***
 ## 日本語
 バグ報告について  
@@ -61,3 +79,21 @@ It is output as follows.
 
 こう書くことで以下のように出力されます。  
 <img src="https://cloud.githubusercontent.com/assets/16377174/24609877/642d64f6-18b7-11e7-9b38-488e0ada3f1e.JPG" width="320px">
+
+## 拡張について
+このような構成にすることでTexter側で認識します。  
+例: (<https://github.com/fuyutsuki/Texter-ExtensionTemplete>)
+```
+PMMP-Texter/
+　└ src/
+　 　└ Texter/
+　 　　　├ commands/
+　 　　　├ extensions/
+　 　　　|　　　├ {extensionName}/
+　 　　　|　　　|　　　└ {MainFile}.php
+　 　　　|　　　└ TexterExtension.php
+　 　　　├ task/
+　 　　　├ utils/
+　　　　 ├ Main.php
+　　　　 └ TexterAPI.php
+```
