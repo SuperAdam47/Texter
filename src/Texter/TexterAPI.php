@@ -29,17 +29,58 @@ use pocketmine\Player;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Item as ItemEntity;
 
+#Texter
+use Texter\task\extensionTask;
+
 /**
  * APIs
  */
 class TexterAPI{
 
-  public function __construct(Main $plugin){
-    $this->plugin = $plugin;
-    $this->packet = $this->plugin->getPacketModel();
+  /* @var Extensions */
+  private $extensions = [];
+
+  public function __construct(Main $main){
+    $this->main = $main;
   }
 
 /******************************************************************************/
+### get/set(情報取得/変更) 関連 ###########
+  /**
+   * @return string $lang (jpn or eng)
+   */
+  public function getLangage(): string{
+    return $this->main->lang;
+  }
+
+  /**
+   * get from langage file
+   * @param string $key
+   * ---------------------------
+   * @return string $message
+   */
+  public function getMessage(string $key){
+    return $this->main->messages->get($key);
+  }
+
+  /**
+   * @return array $this->main->crftp[$levelName][]
+   */
+  public function getCrftps(string $levelName): array{
+    $crftp = isset($this->main->crftp[$levelName]) ? $this->main->crftp[$levelName] : [];
+    return $crftp;
+  }
+
+  /**
+   * @return $this->main->ftp[$levelName][]
+   */
+  public function getFtps(string $levelName): array{
+    $ftp = isset($this->main->ftp[$levelName]) ? $this->main->ftp[$levelName] : [];
+    return $ftp;
+  }
+
+/******************************************************************************/
+### FloatingTextPerticle 関連 ############
   /**
    * 消すことのできない浮き文字を追加します
    *
@@ -52,8 +93,8 @@ class TexterAPI{
    */
   public function addCrftp(Player $player, array $pos, string $title, string $text) :int{
     $levelname = $p->getLevel()->getName();
-    $pk = clone $this->packet[1];
-    $pk->eid = ++Entity::$entityCount;
+    $pk = clone $this->getPacketModel()[0];
+    $pk->eid = Entity::$entityCount++;
     $pk->type = ItemEntity::NETWORK_ID;
     $pk->x = $pos[0];
     $pk->y = $pos[1];
@@ -67,9 +108,8 @@ class TexterAPI{
       Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
       Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
     ];
-    $this->plugin->crftp[$levelname][] = $pk;
+    $this->main->crftp[$levelname][] = $pk;
     $player->dataPacket($pk);
-
     return $pk->eid;
   }
 
@@ -87,8 +127,8 @@ class TexterAPI{
   public function addFtp(Player $player, array $pos, string $title, string $text, string $ownername) :int{
     $level = $player->getLevel();
     $levelname = $level->getName();
-    $pk = clone $this->packet[1];
-    $pk->eid = ++Entity::$entityCount;
+    $pk = clone $this->getPacketModel()[0];
+    $pk->eid = Entity::$entityCount++;
     $pk->type = ItemEntity::NETWORK_ID;
     $pk->x = $pos[0];
     $pk->y = $pos[1];
@@ -104,7 +144,7 @@ class TexterAPI{
     ];
     $pk->world = $levelname;
     $pk->owner = $ownername;
-    $this->plugin->ftp[$levelname][] = $pk;//オリジナルを保存
+    $this->main->ftp[$levelname][] = $pk;//オリジナルを保存
 
     $players = $level->getPlayers();
     foreach ($players as $pl) {
@@ -127,7 +167,7 @@ class TexterAPI{
    * @param int $eid
    */
   public function removeFtp(Player $player, int $eid){
-    $pk = clone $this->packet[2];
+    $pk = clone $this->getPacketModel()[1];
     $pk->eid = $eid;
     $level = $player->getLevel();
     $players = $level->getPlayers();//Levelにいる人を取得
@@ -146,21 +186,21 @@ class TexterAPI{
    * @return bool
    */
   public function updateTitle($player, int $eid, string $new_title) :bool{
-    if (isset($this->plugin->ftp)) {
-      foreach ($this->plugin->ftp as $levn => $k) {
+    if (isset($this->main->ftp)) {
+      foreach ($this->main->ftp as $levn => $k) {
         foreach ($k as $pk) {
           if ((int)$pk->eid === $eid) {
             if ($player->isOp() ||
                 $pk->owner === $player->getName()) {
               //removePk
-              $rpk = clone $this->packet[2];
+              $rpk = clone $this->getPacketModel()[1];
               $rpk->eid = $eid;
               //sendPk
               $texts = explode("\n", $pk->metadata[4][1]);
               $texts[0] = $new_title;
               $pk->metadata[4][1] = implode("\n", $texts);
               //
-              $players = $this->plugin->getServer()->getOnlinePlayers();
+              $players = $this->main->getServer()->getOnlinePlayers();
               if (count($players) !== 0) {
                 foreach ($players as $pl) {
                   if ($pl->getLevel()->getName() === $pk->world) {
@@ -178,8 +218,8 @@ class TexterAPI{
               }
               $text = array_shift($texts);
               $key = "{$pk->world}{$pk->z}{$pk->x}{$pk->y}";
-              if ($this->plugin->ftps_file->exists($key)) {
-                $this->plugin->ftps_file->set($key, [
+              if ($this->main->ftps_file->exists($key)) {
+                $this->main->ftps_file->set($key, [
                   "WORLD" => $pk->world,
                   "Xvec" => $pk->x,
                   "Yvec" => $pk->y,
@@ -188,11 +228,11 @@ class TexterAPI{
                   "TEXT" => $text,
                   "OWNER" => $pk->owner
                 ]);
-                $this->plugin->ftps_file->save();
-                $player->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.updated"));
+                $this->main->ftps_file->save();
+                $player->sendMessage("§b[Texter] ".$this->main->messages->get("command.txt.updated"));
                 return true;
               }else {
-                $player->sendMessage("§b[Texter] §c".$this->plugin->messages->get("command.txt.exists?.ftp"));
+                $player->sendMessage("§b[Texter] §c".$this->main->messages->get("command.txt.exists?.ftp"));
                 return false;
               }
             }
@@ -212,14 +252,14 @@ class TexterAPI{
    * @return bool
    */
   public function updateText($player, int $eid, array $new_text) :bool{
-    if (isset($this->plugin->ftp)) {
-      foreach ($this->plugin->ftp as $levn => $k) {
+    if (isset($this->main->ftp)) {
+      foreach ($this->main->ftp as $levn => $k) {
         foreach ($k as $pk) {
           if ((int)$pk->eid === $eid) {
             if ($player->isOp() ||
                 $pk->owner === $player->getName()) {
               //removePk
-              $rpk = clone $this->packet[2];
+              $rpk = clone $this->getPacketModel()[1];
               $rpk->eid = $eid;
               //sendPk
               $texts = explode("\n", $pk->metadata[4][1]);
@@ -228,7 +268,7 @@ class TexterAPI{
               $text = str_replace("#", "\n", $new_text);
               $pk->metadata[4][1] = "{$title}\n{$text}";
               //
-              $players = $this->plugin->getServer()->getOnlinePlayers();
+              $players = $this->main->getServer()->getOnlinePlayers();
               if (count($players) !== 0) {
                 foreach ($players as $pl) {
                   if ($pl->getLevel()->getName() === $pk->world) {
@@ -245,8 +285,8 @@ class TexterAPI{
                 }
               }
               $key = "{$pk->world}{$pk->z}{$pk->x}{$pk->y}";
-              if ($this->plugin->ftps_file->exists($key)) {
-                $this->plugin->ftps_file->set($key, [
+              if ($this->main->ftps_file->exists($key)) {
+                $this->main->ftps_file->set($key, [
                   "WORLD" => $pk->world,
                   "Xvec" => $pk->x,
                   "Yvec" => $pk->y,
@@ -255,11 +295,11 @@ class TexterAPI{
                   "TEXT" => $new_text,
                   "OWNER" => $pk->owner
                 ]);
-                $this->plugin->ftps_file->save();
-                $player->sendMessage("§b[Texter] ".$this->plugin->messages->get("command.txt.updated"));
+                $this->main->ftps_file->save();
+                $player->sendMessage("§b[Texter] ".$this->main->messages->get("command.txt.updated"));
                 return true;
               }else {
-                $player->sendMessage("§b[Texter] §c".$this->plugin->messages->get("command.txt.exists?.ftp"));
+                $player->sendMessage("§b[Texter] §c".$this->main->messages->get("command.txt.exists?.ftp"));
                 return false;
               }
             }
@@ -268,5 +308,67 @@ class TexterAPI{
       }
     }
   }
-  /****************************************************************************/
+
+/******************************************************************************/
+### 拡張ファイル関連 #################
+  /**
+   * @return array
+   */
+  public function getPacketModel(): array{
+    return [$this->main->AddEntityPacket, $this->main->RemoveEntityPacket];
+  }
+
+  /**
+   * @param TexterExtension
+   */
+  public function registerEvents($extension){
+    $this->main->getServer()->getPluginManager()->registerEvents($extension, $this->main);
+  }
+
+  /**
+   * @param string $class (extension`s CommandPath)
+   */
+  public function registerCommand(string $class){
+    $command = new $class($this->main);
+    $this->main->getServer()->getCommandMap()->register("Texter", $command);
+  }
+
+  /**
+   * @return Extensions[]
+   */
+  public function getExtensions(){
+    $return = isset($this->main->extensions) ? $this->main->extensions : false;
+    return $return;
+  }
+
+  /**
+   * @param string $extensionName
+   * -------------------------------------
+   * @return Extension
+   */
+  public function getExtension(string $extensionName){
+    $return = isset($this->main->extensions[$extensionName]) ? $this->main->extensions[$extensionName] : false;
+    return $return;
+  }
+
+  /**
+   * @param string $extensionName
+   * @param string $functionName
+   * -------------------------------------
+   * @return extensionTask $task
+   */
+  public function getExtensionTask(string $extensionName, string $functionName){
+    $task = new extensionTask($this->main, $extensionName, $functionName);
+    return $task;
+  }
+
+  /**
+   * @param extensionTask $task
+   * @param string $taskType(Delayed/Repeating)
+   * @param int $period
+   */
+  public function execExtensionTask(extensionTask $task, string $taskType = "Delayed", int $period = 20){
+    $taskType = "schedule{$taskType}Task";
+    $this->main->getServer()->getScheduler()->{$taskType}($task, $period);
+  }
 }

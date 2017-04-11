@@ -1,12 +1,15 @@
 {
   "on.enable": "が読み込まれました。",
   "on.disable": "が無効化されました",
-  "lang.registered": "言語を{lang}に設定しました",
+  "lang.registered": "言語を{lang} に設定しました",
 
   "commands.registered": "コマンドを使用可能に設定しました",
   "commands.unavailable": "コマンドを使用不能に設定しました",
 
-  "exchange.data": "データ移動が完了しました。",
+  "extension.load": "拡張ファイルをロードしています...",
+  "extension.loaded": "{count} 個の拡張ファイルをロードしました",
+  "extension.nothing": "拡張ファイルが見つかりませんでした",
+  "extension.isnot": "{name} はTexterの拡張ファイルではありません",
 
   "warning.version?": "バージョンの変更を検知しました。バグが発生した場合、製作者は一切の責任を負いません。",
 

@@ -54,6 +54,9 @@ use pocketmine\command\CommandExecutor;
 #Scheduler
 use pocketmine\scheduler\PluginTask;
 
+#Network
+use pocketmine\network;
+
 # Utils
 use pocketmine\utils\UUID;
 use pocketmine\utils\TextFormat as Color;
@@ -64,51 +67,23 @@ use Texter\commands\TxtCommand;
 use Texter\task\worldGetTask;
 use Texter\utils\tunedConfig as Config;
 
-#Extensions
-// TODO: ver1.6.5
-
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
         //NOTE: このバージョンを変えた場合、正常な動作をしない場合があります
-        VERSION = 'v1.6.2';
+        VERSION = 'v1.6.5',
+        CODENAME = 'Alpha';
 
-  /* @var Extensions */
-  private $extensions = [];
+  /* @var developper`s option */
+  public $devmode = false;
 
   /****************************************************************************/
-  /**
-   * Public APIs
-   */
+
   /**
    * @return Texter API
    */
   public function getAPI(){
     return $this->api;
   }
-
-  /**
-   * @return array [
-   *                "1" => AddEntityPacket
-   *                "2" => RemoveEntityPacket
-   *               ]
-   */
-  public function getPacketModel(){
-    return [$this->AddEntityPacket, $this->RemoveEntityPacket];
-  }
-
-  /**
-   * @return Extension
-   * TODO
-   */
-  /*
-  public function getExtension(string $key){
-    if (isset($this->extensions[$key])) {
-      return $this->extensions[$key];
-    }else {
-      return false;
-    }
-  }
-  */
 
   /****************************************************************************/
   /**
@@ -118,19 +93,14 @@ class Main extends PluginBase implements Listener{
    * 初期化処理
    */
   private function initialize(){
-    try {
-      $this->checkServer();
-      $this->initAPI();
-      $this->checkFiles();
-      $this->registerCommands();
-      $this->YamlToJson();
-      $this->loadExtensions();
-      $this->checkUpdate();
-      $this->preparePacket();
-      date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
-    } catch (Exception $e) {
-      $this->getLogger()->critical($e->getMessage());
-    }
+    $this->checkServer();
+    $this->initAPI();
+    $this->checkFiles();
+    $this->registerCommands();
+    $this->loadExtensions();
+    $this->checkUpdate();
+    $this->preparePacket();
+    date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
   }
 
   /**
@@ -140,13 +110,13 @@ class Main extends PluginBase implements Listener{
     $serverName = strtolower($this->getServer()->getName());
     switch ($serverName) {
       case 'pocketmine-mp':
-        $this->AddEntityPacket = new \pocketmine\network\mcpe\protocol\AddEntityPacket();
-        $this->RemoveEntityPacket = new \pocketmine\network\mcpe\protocol\RemoveEntityPacket();
+        $this->AddEntityPacket = new network\mcpe\protocol\AddEntityPacket();
+        $this->RemoveEntityPacket = new network\mcpe\protocol\RemoveEntityPacket();
       break;
 
       default:
-        $this->AddEntityPacket = new \pocketmine\network\protocol\AddEntityPacket();
-        $this->RemoveEntityPacket = new \pocketmine\network\protocol\RemoveEntityPacket();
+        $this->AddEntityPacket = new network\protocol\AddEntityPacket();
+        $this->RemoveEntityPacket = new network\protocol\RemoveEntityPacket();
       break;
     }
   }
@@ -184,7 +154,7 @@ class Main extends PluginBase implements Listener{
     $this->lang = $this->config->get("lang");
     // lang_{$this->lang}.json
     $this->file1 = "lang_{$this->lang}.json";
-    $this->messages = new Config(__DIR__."/../../lang/{$this->file1}", Config::JSON);
+    $this->messages = new Config(__DIR__."\\..\\..\\lang\\{$this->file1}", Config::JSON);
     $this->getLogger()->info("§a".str_replace("{lang}", $this->lang, $this->messages->get("lang.registered")));
     // crftps.json
     $this->crftps_file = new Config($this->dir.$this->file2, Config::JSON);
@@ -213,90 +183,96 @@ class Main extends PluginBase implements Listener{
   }
 
   /**
-   * yaml->json処理
-   */
-  private function YamlToJson(){
-    if (is_dir($this->dir) and $handle = opendir($this->dir)) {
-      while (($file = readdir($handle)) !== false) {
-        if (filetype($path = $this->dir.$file)) {
-          switch ($file) {
-            case "crftps.yml":
-              $oldyml1 = new Config($path, Config::YAML);
-              $oldData1 = $oldyml1->getAll();
-              $this->crftps_file->setAll($oldData1);
-              $this->crftps_file->save();
-              $this->crftps = $oldData1;
-              unlink($path);
-              $this->getLogger()->info(Color::GREEN."[ crftps.yml -> crftps.json ] ".$this->messages->get("exchange.data"));
-            break;
-
-            case 'ftps.yml':
-              $oldyml2 = new Config($path, Config::YAML);
-              $oldData2 = $oldyml2->getAll();
-              $this->ftps_file->setAll($oldData2);
-              $this->ftps_file->save();
-              $this->ftps = $oldData2;
-              unlink($path);
-              $this->getLogger()->info(Color::GREEN."[ crftps.yml -> crftps.json ] ".$this->messages->get("exchange.data"));
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * 拡張ファイル読み込み
    */
   private function loadExtensions(){
-    // TODO: ver1.6.5
+    $this->getLogger()->info("§a".$this->messages->get("extension.load"));
+    $dir = __DIR__."\\extensions\\";
+    $this->extensions = [];
+    //
+    if ($handle = opendir($dir)) {
+      while (($folder = readdir($handle)) !== false) {
+        if (filetype($path = $dir.$folder) === "dir" &&
+            strpos($folder, '.') === false) {
+          $e_handle = opendir($path."\\");
+          while (($file = readdir($e_handle)) !== false) {
+            if(filetype($filePath = $path."\\".$file) == "file" &&
+               strpos($file, '.php') !== false) {
+              $classname = str_replace(".php", "", $file);
+              $classpath = str_replace(".php", "", strstr($filePath, "Texter\\extensions"));
+              try {
+                $ext = new $classpath($this);
+                if (method_exists($ext, "texter")) {
+                  $this->extensions[$classname] = $ext;
+                  $ext->initialize();
+                }
+              }catch (Exception $e) {
+                $this->getLogger()->warning($e->getMessage());
+              }
+            }
+          }
+          closedir($e_handle);
+        }
+      }
+      closedir($handle);
+    }
+    $exts = count($this->extensions);
+    if ($exts === 0) {
+      $this->getLogger()->info("§a| ".$this->messages->get("extension.nothing"));
+    }else {
+      $this->getLogger()->info("§a| ".str_replace("{count}", $exts, $this->messages->get("extension.loaded")));
+    }
   }
 
   /**
    * アップデート確認
    */
   private function checkUpdate(){
+    $this->devmode = false;
     if ((bool)$this->config->get("checkUpdate")) {
-      $curl = curl_init();
-      curl_setopt_array($curl, [
-        CURLOPT_URL => "https://api.github.com/repos/fuyutsuki/PMMP-Texter/releases",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_USERAGENT => "getGitHubAPI",
-        CURLOPT_SSL_VERIFYPEER => false
-      ]);
-      $json = curl_exec($curl);
+      try {
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+          CURLOPT_URL => "https://api.github.com/repos/fuyutsuki/PMMP-Texter/releases",
+          CURLOPT_RETURNTRANSFER => true,
+          CURLOPT_USERAGENT => "getGitHubAPI",
+          CURLOPT_SSL_VERIFYPEER => false
+        ]);
+        $json = curl_exec($curl);
 
-      $errorno = curl_errno($curl);
-      if ($errorno) {
-        $error = curl_error($curl);
-        throw new Exception($error);
-      }
-      curl_close($curl);
-      $data = json_decode($json, true);
+        $errorno = curl_errno($curl);
+        if ($errorno) {
+          $error = curl_error($curl);
+          throw new \Exception($error);
+        }
+        curl_close($curl);
+        $data = json_decode($json, true);
 
-      $newver = str_replace("v", "", $data[0]["name"]);
-      $curver = str_replace("v", "", self::VERSION);
-      $flag = null;
-      if ($this->getDescription()->getVersion() !== $curver) {
-        $this->getLogger()->warning($this->messages->get("warning.version?"));
-        $flag = 0;
-      }
-      if (version_compare($newver, $curver, "=")) {
-        $this->getLogger()->info(str_replace("{curver}", $curver, $this->messages->get("update.unnecessary")));
-      }elseif (version_compare($newver, $curver, "<") and
-               is_null($flag)) {
-        $this->getLogger()->notice("debug/test mode | v{$curver}");
-        $this->devmode = 1;// TODO
-      }elseif (is_null($flag)) {
-        $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $curver], $this->messages->get("update.available.1")));
-        $this->getLogger()->notice($this->messages->get("update.available.2"));
-        $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
+        $newver = str_replace("v", "", $data[0]["name"]);
+        $curver = str_replace("v", "", self::VERSION);
+        $flag = null;
+        if ($this->getDescription()->getVersion() !== $curver) {
+          $this->getLogger()->warning($this->messages->get("warning.version?"));
+          $flag = 0;
+        }
+        if (version_compare($newver, $curver, "=")) {
+          $this->getLogger()->info(str_replace("{curver}", $curver, $this->messages->get("update.unnecessary")));
+        }elseif (version_compare($newver, $curver, "<") and
+                 is_null($flag)) {
+          $this->getLogger()->info("§b\ devmode => true");
+          $this->devmode = true;// NOTE:for developper option
+        }elseif (is_null($flag)) {
+          $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $curver], $this->messages->get("update.available.1")));
+          $this->getLogger()->notice($this->messages->get("update.available.2"));
+          $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
+        }
+      } catch (Exception $e) {
+        $this->getLogger()->warning($e->getMessage());
       }
     }else {
       $curver = str_replace("v", "", self::VERSION);
       if ($this->getDescription()->getVersion() !== $curver) {
         $this->getLogger()->warning($this->messages->get("warning.version?"));
-        $flag = 0;
       }
     }
   }
@@ -340,7 +316,7 @@ class Main extends PluginBase implements Listener{
    */
   private function makeCrftp(array $pos, string $title, string $text, string $levelname){
     $pk = clone $this->AddEntityPacket;
-    $pk->eid = ++Entity::$entityCount;
+    $pk->eid = Entity::$entityCount++;
     $pk->type = ItemEntity::NETWORK_ID;
     $pk->x = $pos[0];
     $pk->y = $pos[1];
@@ -362,7 +338,7 @@ class Main extends PluginBase implements Listener{
    */
   private function makeFtp(array $pos, string $title, string $text, string $levelname, string $ownername){
     $pk = clone $this->AddEntityPacket;
-    $pk->eid = ++Entity::$entityCount;
+    $pk->eid = Entity::$entityCount++;
     $pk->type = ItemEntity::NETWORK_ID;
     $pk->x = $pos[0];
     $pk->y = $pos[1];
@@ -402,14 +378,31 @@ class Main extends PluginBase implements Listener{
   public function onEnable(){
     $this->initialize();
     $this->getServer()->getPluginManager()->registerEvents($this,$this);
-    $this->getLogger()->info(Color::GREEN.self::NAME." ".self::VERSION." ".$this->messages->get("on.enable"));
+    $this->getLogger()->info(Color::GREEN.self::NAME." ".self::VERSION." - ".Color::BLUE."\"".self::CODENAME."\" ".Color::GREEN.$this->messages->get("on.enable"));
   }
 
   public function onJoin(PlayerJoinEvent $e){
     $p = $e->getPlayer();
+    $lev = $p->getLevel();
+    $levn = $lev->getName();
     //
-    $task = new worldGetTask($this, $p);
-    $this->getServer()->getScheduler()->scheduleDelayedTask($task, 20);
+    if (isset($this->crftp[$levn])) {
+      foreach ($this->crftp[$levn] as $pk) {
+        $p->dataPacket($pk);
+      }
+    }
+    if (isset($this->ftp[$levn])) {
+      $n = $p->getName();
+      foreach ($this->ftp[$levn] as $pk) {
+        if ($n === $pk->owner or $p->isOp()) {
+          $pks = clone $pk;
+          $pks->metadata[4][1] = "[$pks->eid] ".$pks->metadata[4][1];
+          $p->dataPacket($pks);
+        }else {
+          $p->dataPacket($pk);
+        }
+      }
+    }
   }
 
   public function onLevelChange(EntityLevelChangeEvent $e){
@@ -422,8 +415,8 @@ class Main extends PluginBase implements Listener{
         }
       }
       if (isset($this->crftp[$levn])) {
-        foreach ($this->crftp[$levn] as $ftp) {
-          $this->removeWorldChangeFtp($p, $ftp->eid);
+        foreach ($this->crftp[$levn] as $crftp) {
+          $this->removeWorldChangeFtp($p, $crftp->eid);
         }
       }
       $task = new worldGetTask($this, $p);

@@ -11,9 +11,10 @@ use pocketmine\scheduler\PluginTask;
  */
 class worldGetTask extends PluginTask{
 
-  public function __construct(Main $plugin, Player $p){
-    parent::__construct($plugin);
-    $this->plugin = $plugin;
+  public function __construct(Main $main, Player $p){
+    parent::__construct($main);
+    $this->main = $main;
+    $this->api = $main->getAPI();
     $this->p = $p;
   }
 
@@ -22,14 +23,14 @@ class worldGetTask extends PluginTask{
     $lev = $p->getLevel();
     $levn = $lev->getName();
     //
-    if (isset($this->plugin->crftp[$levn])) {
-      foreach ($this->plugin->crftp[$levn] as $pk) {
+    if (isset($this->main->crftp[$levn])) {
+      foreach ($this->main->crftp[$levn] as $pk) {
         $p->dataPacket($pk);
       }
     }
-    if (isset($this->plugin->ftp[$levn])) {
+    if (isset($this->main->ftp[$levn])) {
       $n = $p->getName();
-      foreach ($this->plugin->ftp[$levn] as $pk) {
+      foreach ($this->main->ftp[$levn] as $pk) {
         if ($n === $pk->owner or $p->isOp()) {
           $pks = clone $pk;
           $pks->metadata[4][1] = "[$pks->eid] ".$pks->metadata[4][1];

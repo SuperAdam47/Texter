@@ -1,10 +1,11 @@
 name: Texter
 main: Texter\Main
-version: 1.6.2
+version: 1.6.5
 api:
   - 2.0.0
   - 3.0.0
-  - 3.0.0-ALPHA5
+  - 4.0.0
+  - 3.0.0-ALPHA5 #PocketMine-MP(api4.0/network)
 author: fuyutsuki
 website: https://twitter.com/y_fyi
 

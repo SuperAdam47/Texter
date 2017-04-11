@@ -1,12 +1,15 @@
 {
   "on.enable": "Enabled.",
   "on.disable": "Disabled.",
-  "lang.registered": "language set to {lang}",
+  "lang.registered": "Language set to {lang}",
 
   "commands.registered": "Command set to enabled.",
   "commands.unavailable": "Command set to disabled.",
 
-  "exchange.data": "Data movement completed.",
+  "extension.load": "Loading extensions...",
+  "extension.loaded": "{count} extensions loaded.",
+  "extension.nothing": "Extension was not found.",
+  "extension.isnot": "{name} is not an extension of Texter",
 
   "warning.version?": "Detected version change, you may not be able to receive support.",
 
