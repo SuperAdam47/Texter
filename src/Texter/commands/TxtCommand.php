@@ -32,6 +32,7 @@ class TxtCommand extends Command{
         strtolower($args[0]);
         switch ($args[0]) {
           case 'add':
+          case 'a':
           if (isset($args[1])) {
             $lev = $s->getLevel();
             $levn = $lev->getName();
@@ -56,6 +57,7 @@ class TxtCommand extends Command{
           break;
 
           case 'remove':
+          case 'r':
           if (isset($args[1])) {
             $levn = $s->getLevel()->getName();
             $ftp = ($this->api->getFtp($levn, $args[1])) ? $this->api->getFtp($levn, $args[1]) : false;
@@ -79,6 +81,7 @@ class TxtCommand extends Command{
           break;
 
           case 'update':
+          case 'u':
           if (isset($args[1]) &&//title or text
               isset($args[2]) &&//id
               isset($args[3])) {//文字列
@@ -120,6 +123,7 @@ class TxtCommand extends Command{
 
           case 'help':
           case 'h':
+          case '?':
             $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txt.usage.add")."\n§b".$this->api->getMessage("command.txt.usage.remove")."\n§b".$this->api->getMessage("command.txt.usage.update")."\n§b".$this->api->getMessage("command.txt.usage.indent"));
           break;
 
