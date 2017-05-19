@@ -1,3 +1,5 @@
+<img src="image/Texter.png" width="400px">
+
 ## Texter
 Texter is plugin that displays and deletes FloatingTextPerticle supported to multi-world.
 
