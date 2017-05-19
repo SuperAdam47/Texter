@@ -27,6 +27,8 @@ class extensionTask extends PluginTask{
       }else {
         $ext->{$this->funcName}();
       }
+    }else {
+      $this->main->getLogger()->error("Extensionが取得できていません");
     }
   }
 }

@@ -1,21 +1,26 @@
 <?php
 
 /*
+ * ## To English-speaking countries
+ *
  * Texter, the display FloatingTextPerticle plugin for PocketMine-MP
- * Copyright (C) 2017 fuyutsuki <https://twitter.com/y_fyi>
+ * Copyright (c) 2017 yuko fuyutsuki < https://twitter.com/y_fyi >
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Released under the "MIT license".
+ * You should have received a copy of the MIT license
+ * along with this program.  If not, see
+ * < http://opensource.org/licenses/mit-license.php >.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * ---------------------------------------------------------------------
+ * ## 日本の方へ
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * TexterはPocketMine-MP向けのFloatingTextPerticleを表示するプラグインです。
+ * Copyright (c) 2017 yuko fuyutsuki < https://twitter.com/y_fyi >
+ *
+ * このソフトウェアは"MITライセンス"下で配布されています。
+ * あなたはこのプログラムと共にMITライセンスのコピーを受け取ったはずです。
+ * 受け取っていない場合、下記のURLからご覧ください。
+ * < http://opensource.org/licenses/mit-license.php >
  */
 
 namespace Texter;
@@ -37,15 +42,29 @@ use Texter\task\extensionTask;
  */
 class TexterAPI{
 
+  /* @var Crftp[$levelName][] = $pk */
+  public $crftp = [],
+  /* @var Ftp[$levelName][] = $pk */
+         $ftp = [];
   /* @var Extensions */
   private $extensions = [];
+  /* @var TexterAPI */
+  private static $instance = null;
 
   public function __construct(Main $main){
     $this->main = $main;
+    self::$instance = $this;
   }
 
 /******************************************************************************/
 ### get/set(情報取得/変更) 関連 ###########
+  /**
+   * @return TexterAPI
+   */
+  public static function getInstance(){
+    return self::$instance;
+  }
+
   /**
    * @return string $lang (jpn or eng)
    */
@@ -64,41 +83,80 @@ class TexterAPI{
   }
 
   /**
-   * @return array $this->main->crftp[$levelName][]
+   * @return array $this->crftp[$levelName][$eid] | false
    */
-  public function getCrftps(string $levelName): array{
-    $crftp = isset($this->main->crftp[$levelName]) ? $this->main->crftp[$levelName] : [];
+  public function getCrftps(){
+    $crftp = isset($this->crftp) ? $this->crftp : false;
     return $crftp;
   }
 
   /**
-   * @return $this->main->ftp[$levelName][]
+   * @param string $levelName
+   * @param int $eid
+   * -------------------------------
+   * @return array $this->crftp[$levelName][$eid] | false
    */
-  public function getFtps(string $levelName): array{
-    $ftp = isset($this->main->ftp[$levelName]) ? $this->main->ftp[$levelName] : [];
+  public function getCrftp(string $levelName, int $eid){
+    $crftps = $this->getCrftps();
+    if ($crftps === false) {
+      return false;
+    }else {
+      $pk = (isset($crftps[$levelName][$eid])) ? $crftps[$levelName][$eid] : false;
+      if ($pk === false) {
+        return false;
+      }else {
+        return $pk;
+      }
+    }
+  }
+
+  /**
+   * @return array $this->ftp[$levelName][$eid] | false
+   */
+  public function getFtps(){
+    $ftp = isset($this->ftp) ? $this->ftp : false;
     return $ftp;
+  }
+
+  /**
+   * @param string $levelName
+   * @param int $eid
+   * -------------------------------
+   * @return array $this->ftp[$levelName][$eid] | false
+   */
+  public function getFtp(string $levelName, int $eid){
+    $ftps = $this->getFtps();
+    if ($ftps === false) {
+      return false;
+    }else {
+      $pk = (isset($ftps[$levelName][$eid])) ? $ftps[$levelName][$eid] : false;
+      if ($pk === false) {
+        return false;
+      }else {
+        return $pk;
+      }
+    }
   }
 
 /******************************************************************************/
 ### FloatingTextPerticle 関連 ############
   /**
-   * 消すことのできない浮き文字を追加します
+   * 固定の浮き文字を生成します
    *
-   * @param Player $player
    * @param array $pos
    * @param string $title
-   * @param string $text
-   * -------------------
-   * @return int $eid
+   * @param string $text = ""
+   * @param string $levelname = "world"
+   * ------------------------
+   * @return AddEntityPacket $pk
    */
-  public function addCrftp(Player $player, array $pos, string $title, string $text) :int{
-    $levelname = $p->getLevel()->getName();
-    $pk = clone $this->getPacketModel()[0];
+  public function makeCrftp(array $pos, string $title, string $text = "", string $levelname = "world"){
+    $pk = $this->getPacketModel("add");
     $pk->eid = Entity::$entityCount++;
     $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = $pos[0];
-    $pk->y = $pos[1];
-    $pk->z = $pos[2];
+    $pk->x = sprintf('%0.1f', $pos[0]);
+    $pk->y = sprintf('%0.1f', $pos[1]);
+    $pk->z = sprintf('%0.1f', $pos[2]);
     $flags = 0;
     $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
     $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
@@ -108,71 +166,272 @@ class TexterAPI{
       Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
       Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
     ];
-    $this->main->crftp[$levelname][] = $pk;
-    $player->dataPacket($pk);
-    return $pk->eid;
+    $this->crftp[$levelname][$pk->eid] = $pk;
+
+    return $pk;
   }
 
   /**
-   * 浮き文字を追加します
+   * 可変動の浮き文字を生成します
    *
-   * @param Player $player
    * @param array $pos
    * @param string $title
-   * @param string $text
-   * @param string $ownername
+   * @param string $text = ""
+   * @param string $levelname = "world"
+   * @param string $ownername = ""
    * ------------------------
-   * @return int $eid
+   * @return AddEntityPacket $pk
    */
-  public function addFtp(Player $player, array $pos, string $title, string $text, string $ownername) :int{
-    $level = $player->getLevel();
-    $levelname = $level->getName();
-    $pk = clone $this->getPacketModel()[0];
+  public function makeFtp(array $pos, string $title, string $text = "", string $levelname = "world", string $ownername = ""){
+    $pk = $this->getPacketModel("add");
     $pk->eid = Entity::$entityCount++;
     $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = $pos[0];
-    $pk->y = $pos[1];
-    $pk->z = $pos[2];
+    $pk->x = sprintf('%0.1f', $pos[0]);
+    $pk->y = sprintf('%0.1f', $pos[1]);
+    $pk->z = sprintf('%0.1f', $pos[2]);
     $flags = 0;
     $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
     $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
     $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
     $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
+    $title = str_replace("#", "\n", $title);
+    $text = str_replace("#", "\n", $text);
     $pk->metadata = [
       Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
       Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
     ];
     $pk->world = $levelname;
-    $pk->owner = $ownername;
-    $this->main->ftp[$levelname][] = $pk;//オリジナルを保存
+    $pk->owner = strtolower($ownername);
+    $this->ftp[$levelname][$pk->eid] = $pk;
 
-    $players = $level->getPlayers();
-    foreach ($players as $pl) {
-      $n = $pl->getName();
-      if ($n === $ownername or $pl->isOp()) {
-        $pks = clone $pk;//送信用パケット複製
-        $pks->metadata[4][1] = "[$pk->eid] ".$pks->metadata[4][1];
-        $pl->dataPacket($pks);
-      }else {
-        $pl->dataPacket($pk);
-      }
-    }
-    return $pk->eid;
+    return $pk;
   }
 
   /**
-   * 指定IDの浮き文字を削除します
+   * 消すことのできない浮き文字を追加します
+   *
+   * @param Object $player
+   * @param array $pos
+   * @param string $title
+   * @param string $text
+   * -------------------
+   * @return AddEntityPacket $pk or bool(false)
+   */
+  public function addCrftp($player, array $pos, string $title, string $text = ""){
+    $level = $player->getLevel();
+    $levelname = $level->getName();
+    $pk = $this->getPacketModel("add");
+    $pk->eid = Entity::$entityCount++;
+    $pk->type = ItemEntity::NETWORK_ID;
+    $pk->x = sprintf('%0.1f', $pos[0]);
+    $pk->y = sprintf('%0.1f', $pos[1]);
+    $pk->z = sprintf('%0.1f', $pos[2]);
+    $flags = 0;
+    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
+    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
+    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
+    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
+    $title = str_replace("#", "\n", $title);
+    $text = str_replace("#", "\n", $text);
+    $pk->metadata = [
+      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
+      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
+    ];
+    $this->crftp[$levelname][$pk->eid] = $pk;
+    $key = count($this->main->crftps);
+    if ($this->main->crftps_file->exists(--$key) === false) {
+      $this->main->crftps_file->set(--$key, [
+        "WORLD" => $levelName,
+        "Xvec" => $pk->x,
+        "Yvec" => $pk->y,
+        "Zvec" => $pk->z,
+        "TITLE" => $title,
+        "TEXT" => $text,
+      ]);
+      $this->crftps_file->save();
+
+      $players = $level->getPlayers();
+      foreach ($players as $pl) {
+        $pl->dataPacket($pk);
+      }
+      return $pk;
+    }else {
+      $this->removeFtp($player, $pk->eid);
+      return false;
+    }
+  }
+
+  /**
+   * 浮き文字を追加します
+   *
+   * @param Object $player
+   * @param array $pos
+   * @param string $title
+   * @param string $text
+   * ------------------------
+   * @return AddEntityPacket or bool(false)
+   */
+  public function addFtp($player, array $pos, string $title, string $text = ""){
+    $level = $player->getLevel();
+    $levelName = $level->getName();
+    $pk = $this->getPacketModel("add");
+    $pk->eid = Entity::$entityCount++;
+    $pk->type = ItemEntity::NETWORK_ID;
+    $pk->x = sprintf('%0.1f', $pos[0]);
+    $pk->y = sprintf('%0.1f', $pos[1]);
+    $pk->z = sprintf('%0.1f', $pos[2]);
+    $flags = 0;
+    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
+    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
+    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
+    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
+    $title = str_replace("#", "\n", $title);
+    $text = str_replace("#", "\n", $text);
+    $pk->metadata = [
+      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
+      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
+    ];
+    $pk->world = $levelName;
+    $pk->owner = strtolower($player->getName());
+    $this->ftp[$levelName][$pk->eid] = $pk;//オリジナルを保存
+    $key = "{$levelName}{$pk->z}{$pk->x}{$pk->y}";
+    if ($this->main->ftps_file->exists($key) === false) {
+      $this->main->ftps_file->set($key, [
+        "WORLD" => $levelName,
+        "Xvec" => $pk->x,
+        "Yvec" => $pk->y,
+        "Zvec" => $pk->z,
+        "TITLE" => $title,
+        "TEXT" => $text,
+        "OWNER" => $pk->owner
+      ]);
+      $this->main->ftps_file->save();
+
+      $players = $level->getPlayers();
+      foreach ($players as $pl) {
+        $n = $pl->getName();
+        if ($n === $player->getName() or $pl->isOp()) {
+          $pks = clone $pk;//送信用パケット複製
+          $pks->metadata[4][1] = "[$pk->eid] ".$pks->metadata[4][1];
+          $pl->dataPacket($pks);
+        }else {
+          $pl->dataPacket($pk);
+        }
+      }
+      return $pk;
+    }else {
+      $this->removeFtp($player, $pk->eid);
+      return false;
+    }
+  }
+
+  /**
+   * 指定IDの浮き文字を削除します (ftps.json)
+   *
+   * @param Object $player
+   * @param int $eid
+   * ------------------
+   * @return bool
+   */
+  public function removeFtp($player, int $eid): bool{
+    $level = $player->getLevel();
+    $levelName = $level->getName();
+    //
+    $pk = $this->getPacketModel("remove");
+    $pk->eid = $eid;
+    $epk = $this->getFtp($levelName, $eid);
+    if ($epk === false) {
+      return false;
+    }else {
+      $key = "{$levelName}{$epk->z}{$epk->x}{$epk->y}";
+      if ($this->main->ftps_file->exists($key) !== false) {
+        $this->main->ftps_file->remove($key);
+        $this->main->ftps_file->save();
+        unset($this->ftp[$levelName][$eid]);
+        $players = $level->getPlayers();//Levelにいる人を取得
+        foreach ($players as $pl) {
+          $pl->dataPacket($pk);
+        }
+      }else {
+        unset($this->ftp[$levelName][$eid]);
+        $players = $level->getPlayers();//Levelにいる人を取得
+        foreach ($players as $pl) {
+          $pl->dataPacket($pk);
+        }
+      }
+      return true;
+    }
+  }
+
+  /**
+   * 全ての浮き文字を削除します (ftps.json)
    *
    * @param Player $player
-   * @param int $eid
+   * ---------------------------
+   * @return int or bool(false)
    */
-  public function removeFtp(Player $player, int $eid){
-    $pk = clone $this->getPacketModel()[1];
-    $pk->eid = $eid;
+  public function removeFtps($player){
     $level = $player->getLevel();
-    $players = $level->getPlayers();//Levelにいる人を取得
-    foreach ($players as $pl) {
-      $pl->dataPacket($pk);
+    $levelName = $level->getName();
+    //
+    $pk = $this->getPacketModel("remove");
+    $ftps = $this->getFtps();
+    if ($ftps === false) {
+      return false;
+    }else {
+      $reids = [];
+      foreach ($ftps as $levn => $eids) {
+        foreach ($eids as $eid => $pk) {
+          $reids[] = $eid;
+          $key = "{$levn}{$pk->z}{$pk->x}{$pk->y}";
+          $this->main->ftps_file->remove($key);
+          $this->main->ftps_file->save();
+        }
+      }
+      $pls = $this->main->getServer()->getOnlinePlayers();
+      if (count($pls) !== 0) {
+        foreach ($pls as $pl) {
+          $this->rFeTmP($pl, $reids);
+        }
+      }
+      $this->ftp = [];
+      return count($reids);
+    }
+  }
+
+  /**
+   * 指定ユーザーの浮き文字をすべて削除します
+   *
+   * @param Object $player
+   * @param string $user
+   * ---------------------
+   * @return int or bool
+   */
+  public function removeUserFtps($player, string $user){
+    $name = strtolower($player->getName());
+    $ftps = $this->getFtps();
+    if ($ftps === false) {
+      return false;
+    }else {
+      $reids = [];
+      foreach ($ftps as $levn => $eids) {
+        foreach ($eids as $eid => $pk) {
+          if ($pk->owner === $name) {
+            $reids[] = $pk->eid;
+            $key = "{$levn}{$pk->z}{$pk->x}{$pk->y}";
+            $this->main->ftps_file->remove($key);
+            $this->main->ftps_file->save();
+            unset($this->ftp[$levn][$eid]);
+          }
+        }
+      }
+      $pls = $this->main->getServer()->getOnlinePlayers();
+      if (count($pls) !== 0) {
+        foreach ($pls as $pl) {
+          $this->rFeTmP($pl, $reids);
+        }
+      }
+      return count($reids);
     }
   }
 
@@ -185,57 +444,51 @@ class TexterAPI{
    * ------------------------
    * @return bool
    */
-  public function updateTitle($player, int $eid, string $new_title) :bool{
-    if (isset($this->main->ftp)) {
-      foreach ($this->main->ftp as $levn => $k) {
-        foreach ($k as $pk) {
-          if ((int)$pk->eid === $eid) {
-            if ($player->isOp() ||
-                $pk->owner === $player->getName()) {
-              //removePk
-              $rpk = clone $this->getPacketModel()[1];
-              $rpk->eid = $eid;
-              //sendPk
-              $texts = explode("\n", $pk->metadata[4][1]);
-              $texts[0] = $new_title;
-              $pk->metadata[4][1] = implode("\n", $texts);
-              //
-              $players = $this->main->getServer()->getOnlinePlayers();
-              if (count($players) !== 0) {
-                foreach ($players as $pl) {
-                  if ($pl->getLevel()->getName() === $pk->world) {
-                    $pl->dataPacket($rpk);
-                    $n = $pl->getName();
-                    if ($n === $pk->owner or $pl->isOp()) {
-                      $pks = clone $pk;//送信用パケット複製
-                      $pks->metadata[4][1] = "[$pk->eid] ".$pks->metadata[4][1];
-                      $pl->dataPacket($pks);
-                    }else {
-                      $pl->dataPacket($pk);
-                    }
-                  }
+  public function updateTitle($player, int $eid, string $new_title): bool{
+    if (isset($this->ftp)) {
+      $name = $player->getName();
+      $levelName = $player->getLevel()->getName();
+      $pk = $this->getFtp($levelName, $eid);
+      if ($pk === false) {
+        return false;
+      }else {
+        if ($player->isOP() || $pk->owner === $name) {
+          $texts = explode("\n", $pk->metadata[4][1]);
+          $texts[0] = "{$new_title}";
+          $pk->metadata[4][1] = implode("\n", $texts);
+          //
+          $players = $this->main->getServer()->getOnlinePlayers();
+          if (count($players) !== 0) {
+            foreach ($players as $pl) {
+              if ($pl->getLevel()->getName() === $pk->world) {
+                $n = $pl->getName();
+                if ($pl->isOp() || $pk->owner === $n) {
+                  $pks = clone $pk;//送信用パケット複製
+                  $pks->metadata[4][1] = "[$pk->eid] ".$pks->metadata[4][1];
+                  $pl->dataPacket($pks);
+                }else {
+                  $pl->dataPacket($pk);
                 }
               }
-              $text = array_shift($texts);
-              $key = "{$pk->world}{$pk->z}{$pk->x}{$pk->y}";
-              if ($this->main->ftps_file->exists($key)) {
-                $this->main->ftps_file->set($key, [
-                  "WORLD" => $pk->world,
-                  "Xvec" => $pk->x,
-                  "Yvec" => $pk->y,
-                  "Zvec" => $pk->z,
-                  "TITLE" => $new_title,
-                  "TEXT" => $text,
-                  "OWNER" => $pk->owner
-                ]);
-                $this->main->ftps_file->save();
-                $player->sendMessage("§b[Texter] ".$this->main->messages->get("command.txt.updated"));
-                return true;
-              }else {
-                $player->sendMessage("§b[Texter] §c".$this->main->messages->get("command.txt.exists?.ftp"));
-                return false;
-              }
             }
+          }
+          array_shift($texts);
+          $text = implode("\n", $texts);
+          $key = "{$pk->world}{$pk->z}{$pk->x}{$pk->y}";
+          if ($this->main->ftps_file->exists($key)) {
+            $this->main->ftps_file->set($key, [
+              "WORLD" => $pk->world,
+              "Xvec" => $pk->x,
+              "Yvec" => $pk->y,
+              "Zvec" => $pk->z,
+              "TITLE" => $new_title,
+              "TEXT" => $text,
+              "OWNER" => $pk->owner
+            ]);
+            $this->main->ftps_file->save();
+            return true;
+          }else {
+            return false;
           }
         }
       }
@@ -251,58 +504,53 @@ class TexterAPI{
    * ------------------------
    * @return bool
    */
-  public function updateText($player, int $eid, array $new_text) :bool{
-    if (isset($this->main->ftp)) {
-      foreach ($this->main->ftp as $levn => $k) {
-        foreach ($k as $pk) {
-          if ((int)$pk->eid === $eid) {
-            if ($player->isOp() ||
-                $pk->owner === $player->getName()) {
-              //removePk
-              $rpk = clone $this->getPacketModel()[1];
-              $rpk->eid = $eid;
-              //sendPk
-              $texts = explode("\n", $pk->metadata[4][1]);
-              $title = $texts[0];
-              $new_text = implode(" ", $new_text);
-              $text = str_replace("#", "\n", $new_text);
-              $pk->metadata[4][1] = "{$title}\n{$text}";
-              //
-              $players = $this->main->getServer()->getOnlinePlayers();
-              if (count($players) !== 0) {
-                foreach ($players as $pl) {
-                  if ($pl->getLevel()->getName() === $pk->world) {
-                    $pl->dataPacket($rpk);
-                    $n = $pl->getName();
-                    if ($n === $pk->owner or $pl->isOp()) {
-                      $pks = clone $pk;//送信用パケット複製
-                      $pks->metadata[4][1] = "[$pk->eid] ".$pks->metadata[4][1];
-                      $pl->dataPacket($pks);
-                    }else {
-                      $pl->dataPacket($pk);
-                    }
-                  }
+  public function updateText($player, int $eid, array $new_text): bool{
+    if (isset($this->ftp)) {
+      $name = $player->getName();
+      $levelName = $player->getLevel()->getName();
+      $pk = $this->getFtp($levelName, $eid);
+      if ($pk === false) {
+        return false;
+      }else {
+        if ($player->isOP() || $pk->owner === $name) {
+          $texts = explode("\n", $pk->metadata[4][1]);
+          $title = $texts[0];
+          $new_text = implode(" ", $new_text);
+          $text = str_replace("#", "\n", $new_text);
+          $pk->metadata[4][1] = "{$title}\n{$text}";
+          //
+          $players = $this->main->getServer()->getOnlinePlayers();
+          if (count($players) !== 0) {
+            foreach ($players as $pl) {
+              if ($pl->getLevel()->getName() === $pk->world) {
+                $n = $pl->getName();
+                if ($pl->isOp() || $pk->owner === $n) {
+                  $pks = clone $pk;//送信用パケット複製
+                  $pks->metadata[4][1] = "[$pk->eid] ".$pks->metadata[4][1];
+                  $pl->dataPacket($pks);
+                }else {
+                  $pl->dataPacket($pk);
                 }
               }
-              $key = "{$pk->world}{$pk->z}{$pk->x}{$pk->y}";
-              if ($this->main->ftps_file->exists($key)) {
-                $this->main->ftps_file->set($key, [
-                  "WORLD" => $pk->world,
-                  "Xvec" => $pk->x,
-                  "Yvec" => $pk->y,
-                  "Zvec" => $pk->z,
-                  "TITLE" => $title,
-                  "TEXT" => $new_text,
-                  "OWNER" => $pk->owner
-                ]);
-                $this->main->ftps_file->save();
-                $player->sendMessage("§b[Texter] ".$this->main->messages->get("command.txt.updated"));
-                return true;
-              }else {
-                $player->sendMessage("§b[Texter] §c".$this->main->messages->get("command.txt.exists?.ftp"));
-                return false;
-              }
             }
+          }
+          array_shift($texts);
+          $key = "{$pk->world}{$pk->z}{$pk->x}{$pk->y}";
+          if ($this->main->ftps_file->exists($key)) {
+            $this->main->ftps_file->set($key, [
+              "WORLD" => $pk->world,
+              "Xvec" => $pk->x,
+              "Yvec" => $pk->y,
+              "Zvec" => $pk->z,
+              "TITLE" => $title,
+              "TEXT" => $text,
+              "OWNER" => $pk->owner
+            ]);
+            $this->main->ftps_file->save();
+
+            return true;
+          }else {
+            return false;
           }
         }
       }
@@ -312,10 +560,24 @@ class TexterAPI{
 /******************************************************************************/
 ### 拡張ファイル関連 #################
   /**
-   * @return array
+   * @param string $type add: AddEntityPacket, remove: RemoveEntityPacket
+   * --------------
+   * @return packetObject | bool(false)
    */
-  public function getPacketModel(): array{
-    return [$this->main->AddEntityPacket, $this->main->RemoveEntityPacket];
+  public function getPacketModel(string $type){
+    switch ($type) {
+      case 'add':
+        return clone $this->main->AddEntityPacket;
+      break;
+
+      case 'remove':
+        return clone $this->main->RemoveEntityPacket;
+      break;
+
+      default:
+        return false;
+      break;
+    }
   }
 
   /**
@@ -334,7 +596,7 @@ class TexterAPI{
   }
 
   /**
-   * @return Extensions[]
+   * @return Extensions[] or bool(false)
    */
   public function getExtensions(){
     $return = isset($this->main->extensions) ? $this->main->extensions : false;
@@ -344,7 +606,7 @@ class TexterAPI{
   /**
    * @param string $extensionName
    * -------------------------------------
-   * @return Extension
+   * @return Extension or bool(false)
    */
   public function getExtension(string $extensionName){
     $return = isset($this->main->extensions[$extensionName]) ? $this->main->extensions[$extensionName] : false;
@@ -371,4 +633,14 @@ class TexterAPI{
     $taskType = "schedule{$taskType}Task";
     $this->main->getServer()->getScheduler()->{$taskType}($task, $period);
   }
+
+  /****************************************************************************/
+  private function rFeTmP($pl, array $reids){
+    foreach ($reids as $eid) {
+      $pk = $this->getPacketModel("remove");
+      $pk->eid = $eid;
+      $pl->dataPacket($pk);
+    }
+  }
+  /****************************************************************************/
 }

@@ -1,21 +1,26 @@
 <?php
 
 /*
+ * ## To English-speaking countries
+ *
  * Texter, the display FloatingTextPerticle plugin for PocketMine-MP
- * Copyright (C) 2017 fuyutsuki <https://twitter.com/y_fyi>
+ * Copyright (c) 2017 yuko fuyutsuki < https://twitter.com/y_fyi >
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Released under the "MIT license".
+ * You should have received a copy of the MIT license
+ * along with this program.  If not, see
+ * < http://opensource.org/licenses/mit-license.php >.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * ---------------------------------------------------------------------
+ * ## 日本の方へ
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * TexterはPocketMine-MP向けのFloatingTextPerticleを表示するプラグインです。
+ * Copyright (c) 2017 yuko fuyutsuki < https://twitter.com/y_fyi >
+ *
+ * このソフトウェアは"MITライセンス"下で配布されています。
+ * あなたはこのプログラムと共にMITライセンスのコピーを受け取ったはずです。
+ * 受け取っていない場合、下記のURLからご覧ください。
+ * < http://opensource.org/licenses/mit-license.php >
  */
 
 namespace Texter;
@@ -51,30 +56,27 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\CommandExecutor;
 
-#Scheduler
-use pocketmine\scheduler\PluginTask;
-
 #Network
 use pocketmine\network;
 
 # Utils
-use pocketmine\utils\UUID;
 use pocketmine\utils\TextFormat as Color;
 
 #etc
 use Texter\TexterAPI;
 use Texter\commands\TxtCommand;
+use Texter\commands\TxtAdmCommand;
 use Texter\task\worldGetTask;
 use Texter\utils\tunedConfig as Config;
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        //NOTE: このバージョンを変えた場合、正常な動作をしない場合があります
-        VERSION = 'v1.6.5',
-        CODENAME = 'Alpha';
+        VERSION = 'v2.0',
+        CODENAME = 'ω(omega)';
 
   /* @var developper`s option */
   public $devmode = false;
+  /*
 
   /****************************************************************************/
 
@@ -82,7 +84,7 @@ class Main extends PluginBase implements Listener{
    * @return Texter API
    */
   public function getAPI(){
-    return $this->api;
+    return TexterAPI::getInstance();
   }
 
   /****************************************************************************/
@@ -94,13 +96,13 @@ class Main extends PluginBase implements Listener{
    */
   private function initialize(){
     $this->checkServer();
-    $this->initAPI();
     $this->checkFiles();
     $this->registerCommands();
     $this->loadExtensions();
     $this->checkUpdate();
     $this->preparePacket();
     date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
+    $this->getLogger()->info("§a┝ ".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
   }
 
   /**
@@ -171,11 +173,10 @@ class Main extends PluginBase implements Listener{
     if ((bool)$this->config->get("canUseCommands")) {
       $map = $this->getServer()->getCommandMap();
       $commands = [
-        "txt" => "\\Texter\\commands\\TxtCommand"
+        new TxtCommand($this),
+        new TxtAdmCommand($this)
       ];
-      foreach ($commands as $cmd => $class) {
-        $map->register("Texter", new $class($this));
-      }
+      $map->registerAll("Texter", $commands);
       $this->getLogger()->info("§a".$this->messages->get("commands.registered"));
     }else {
       $this->getLogger()->info("§c".$this->messages->get("commands.unavailable"));
@@ -198,15 +199,14 @@ class Main extends PluginBase implements Listener{
           while (($file = readdir($e_handle)) !== false) {
             if(filetype($filePath = $path."\\".$file) == "file" &&
                strpos($file, '.php') !== false) {
-              $classname = str_replace(".php", "", $file);
               $classpath = str_replace(".php", "", strstr($filePath, "Texter\\extensions"));
               try {
                 $ext = new $classpath($this);
-                if (method_exists($ext, "texter")) {
-                  $this->extensions[$classname] = $ext;
+                if (get_parent_class($ext) === "Texter\\extensions\\TexterExtension") {
+                  $this->extensions[$ext->getName()] = $ext;
                   $ext->initialize();
                 }
-              }catch (Exception $e) {
+              }catch (\Exception $e) {
                 $this->getLogger()->warning($e->getMessage());
               }
             }
@@ -217,10 +217,8 @@ class Main extends PluginBase implements Listener{
       closedir($handle);
     }
     $exts = count($this->extensions);
-    if ($exts === 0) {
-      $this->getLogger()->info("§a| ".$this->messages->get("extension.nothing"));
-    }else {
-      $this->getLogger()->info("§a| ".str_replace("{count}", $exts, $this->messages->get("extension.loaded")));
+    if ($exts !== 0) {
+      $this->getLogger()->info("§a┝ ".str_replace("{count}", $exts, $this->messages->get("extension.loaded")));
     }
   }
 
@@ -233,7 +231,7 @@ class Main extends PluginBase implements Listener{
       try {
         $curl = curl_init();
         curl_setopt_array($curl, [
-          CURLOPT_URL => "https://api.github.com/repos/fuyutsuki/PMMP-Texter/releases",
+          CURLOPT_URL => "https://api.github.com/repos/fuyutsuki/Texter/releases",
           CURLOPT_RETURNTRANSFER => true,
           CURLOPT_USERAGENT => "getGitHubAPI",
           CURLOPT_SSL_VERIFYPEER => false
@@ -256,17 +254,16 @@ class Main extends PluginBase implements Listener{
           $flag = 0;
         }
         if (version_compare($newver, $curver, "=")) {
-          $this->getLogger()->info(str_replace("{curver}", $curver, $this->messages->get("update.unnecessary")));
+          $this->getLogger()->notice(str_replace("{curver}", $curver, $this->messages->get("update.unnecessary")));
         }elseif (version_compare($newver, $curver, "<") and
                  is_null($flag)) {
-          $this->getLogger()->info("§b\ devmode => true");
           $this->devmode = true;// NOTE:for developper option
         }elseif (is_null($flag)) {
           $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $curver], $this->messages->get("update.available.1")));
           $this->getLogger()->notice($this->messages->get("update.available.2"));
           $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
         }
-      } catch (Exception $e) {
+      } catch (\Exception $e) {
         $this->getLogger()->warning($e->getMessage());
       }
     }else {
@@ -290,7 +287,7 @@ class Main extends PluginBase implements Listener{
       //
       if ($this->getServer()->loadLevel($v["WORLD"])) {
         $pos = [$v["Xvec"], $v["Yvec"], $v["Zvec"]];
-        $this->makeCrftp($pos, $title, $text, $v["WORLD"]);
+        $this->api->makeCrftp($pos, $title, $text, $v["WORLD"]);
       }else {
         $this->getLogger()->notice(str_replace("{world}", $v["WORLD"], $this->messages->get("world.not.exists")));
       }
@@ -304,57 +301,11 @@ class Main extends PluginBase implements Listener{
       //
       if ($this->getServer()->loadLevel($v["WORLD"])) {
         $pos = [$v["Xvec"], $v["Yvec"], $v["Zvec"]];
-        $this->makeFtp($pos, $title, $text, $v["WORLD"], $v["OWNER"]);
+        $this->api->makeFtp($pos, $title, $text, $v["WORLD"], $v["OWNER"]);
       }else {
         $this->getLogger()->notice(str_replace("{world}", $v["WORLD"], $this->messages->get("world.not.exists")));
       }
     }
-  }
-
-  /**
-   * crftp送信準備
-   */
-  private function makeCrftp(array $pos, string $title, string $text, string $levelname){
-    $pk = clone $this->AddEntityPacket;
-    $pk->eid = Entity::$entityCount++;
-    $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = $pos[0];
-    $pk->y = $pos[1];
-    $pk->z = $pos[2];
-    $flags = 0;
-    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
-    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
-    $pk->metadata = [
-      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
-    ];
-    $this->crftp[$levelname][] = $pk;
-  }
-
-  /**
-   * ftp送信準備
-   */
-  private function makeFtp(array $pos, string $title, string $text, string $levelname, string $ownername){
-    $pk = clone $this->AddEntityPacket;
-    $pk->eid = Entity::$entityCount++;
-    $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = $pos[0];
-    $pk->y = $pos[1];
-    $pk->z = $pos[2];
-    $flags = 0;
-    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
-    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
-    $pk->metadata = [
-      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
-    ];
-    $pk->world = $levelname;
-    $pk->owner = $ownername;
-    $this->ftp[$levelname][] = $pk;
   }
 
   /**
@@ -374,6 +325,9 @@ class Main extends PluginBase implements Listener{
   /**
    * PMMPPluginBase APIs
    */
+  public function onLoad(){
+    $this->initAPI();
+  }
 
   public function onEnable(){
     $this->initialize();
@@ -386,14 +340,14 @@ class Main extends PluginBase implements Listener{
     $lev = $p->getLevel();
     $levn = $lev->getName();
     //
-    if (isset($this->crftp[$levn])) {
-      foreach ($this->crftp[$levn] as $pk) {
+    if (isset($this->api->crftp[$levn])) {
+      foreach ($this->api->crftp[$levn] as $pk) {
         $p->dataPacket($pk);
       }
     }
-    if (isset($this->ftp[$levn])) {
+    if (isset($this->api->ftp[$levn])) {
       $n = $p->getName();
-      foreach ($this->ftp[$levn] as $pk) {
+      foreach ($this->api->ftp[$levn] as $pk) {
         if ($n === $pk->owner or $p->isOp()) {
           $pks = clone $pk;
           $pks->metadata[4][1] = "[$pks->eid] ".$pks->metadata[4][1];
@@ -409,13 +363,13 @@ class Main extends PluginBase implements Listener{
     $p = $e->getEntity();
     if ($p instanceof Player){
       $levn = $p->getLevel()->getName();
-      if (isset($this->ftp[$levn])) {
-        foreach ($this->ftp[$levn] as $ftp) {
+      if (isset($this->api->ftp[$levn])) {
+        foreach ($this->api->ftp[$levn] as $ftp) {
           $this->removeWorldChangeFtp($p, $ftp->eid);
         }
       }
-      if (isset($this->crftp[$levn])) {
-        foreach ($this->crftp[$levn] as $crftp) {
+      if (isset($this->api->crftp[$levn])) {
+        foreach ($this->api->crftp[$levn] as $crftp) {
           $this->removeWorldChangeFtp($p, $crftp->eid);
         }
       }

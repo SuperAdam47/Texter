@@ -1,12 +1,19 @@
 name: Texter
 main: Texter\Main
-version: 1.6.5
+version: "2.0"
 api:
   - 2.0.0
   - 3.0.0
   - 4.0.0
-  - 3.0.0-ALPHA5 #PocketMine-MP(api4.0/network)
+  - 3.0.0-ALPHA5 #pmmp/PocketMine-MP
 author: fuyutsuki
+authors:
+# SpecialThanks(敬称略)
+ - mfmfnek0
+ - onebone
+ - ogiwara
+ - Shootsta_ERU0531
+ - Toganon
 website: https://twitter.com/y_fyi
 
 permissions:
@@ -20,4 +27,7 @@ permissions:
     children:
       texter.command.txt:
         default: op
-        description: "permission that allows player to use texter"
+        description: "permission that allows player to use /txt"
+      texter.command.txtadm:
+        default: op
+        description: "permission that allows player to use /txtadm"
