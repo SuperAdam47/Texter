@@ -71,8 +71,8 @@ use Texter\utils\tunedConfig as Config;
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v2.0',
-        CODENAME = 'ω(omega)';
+        VERSION = 'v2.0.2',
+        CODENAME = 'Convallaria majalis';
 
   /* @var developper`s option */
   public $devmode = false;

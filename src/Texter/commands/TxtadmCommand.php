@@ -12,9 +12,9 @@ use pocketmine\command\CommandSender;
 use Texter\Main;
 
 /**
- * @var TxtadmCommand
+ * @var TxtAdmCommand
  */
-class TxtadmCommand extends Command{
+class TxtAdmCommand extends Command{
 
   public function __construct(Main $main){
     $this->main = $main;

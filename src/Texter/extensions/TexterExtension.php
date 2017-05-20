@@ -24,7 +24,6 @@ abstract class TexterExtension{
   /* @return filestream or null */
   public function getResource(string $filename){
     $filename = rtrim(str_replace("\\", "/", $filename), "/");
-    if($this->main->devmode) echo $filename;
     if(file_exists($this->getDir()."resources\\".$filename)){
       return fopen($this->getDir()."resources\\".$filename, "rb");
     }else {
