@@ -27,18 +27,21 @@ namespace Texter;
 
 use Texter\Main;
 
-#Player
+# Player
 use pocketmine\Player;
 
-#Entity
+# Entity
 use pocketmine\entity\Entity;
 use pocketmine\entity\Item as ItemEntity;
 
-#Texter
+# Math
+use pocketmine\math\Vector3;
+
+# Texter
 use Texter\task\extensionTask;
 
 /**
- * APIs
+ * TexterAPI
  */
 class TexterAPI{
 
@@ -46,8 +49,6 @@ class TexterAPI{
   public $crftp = [],
   /* @var Ftp[$levelName][] = $pk */
          $ftp = [];
-  /* @var Extensions */
-  private $extensions = [];
   /* @var TexterAPI */
   private static $instance = null;
 
@@ -66,13 +67,6 @@ class TexterAPI{
   }
 
   /**
-   * @return string $lang (jpn or eng)
-   */
-  public function getLangage(): string{
-    return $this->main->lang;
-  }
-
-  /**
    * get from langage file
    * @param string $key
    * ---------------------------
@@ -83,7 +77,7 @@ class TexterAPI{
   }
 
   /**
-   * @return array $this->crftp[$levelName][$eid] | false
+   * @return array $this->crftp[$levelName][$euid] | false
    */
   public function getCrftps(){
     $crftp = isset($this->crftp) ? $this->crftp : false;
@@ -92,16 +86,16 @@ class TexterAPI{
 
   /**
    * @param string $levelName
-   * @param int $eid
+   * @param int $euid
    * -------------------------------
-   * @return array $this->crftp[$levelName][$eid] | false
+   * @return array $this->crftp[$levelName][$euid] | false
    */
-  public function getCrftp(string $levelName, int $eid){
+  public function getCrftp(string $levelName, int $euid){
     $crftps = $this->getCrftps();
     if ($crftps === false) {
       return false;
     }else {
-      $pk = (isset($crftps[$levelName][$eid])) ? $crftps[$levelName][$eid] : false;
+      $pk = (isset($crftps[$levelName][$euid])) ? $crftps[$levelName][$euid] : false;
       if ($pk === false) {
         return false;
       }else {
@@ -111,7 +105,7 @@ class TexterAPI{
   }
 
   /**
-   * @return array $this->ftp[$levelName][$eid] | false
+   * @return array $this->ftp[$levelName][$euid] | false
    */
   public function getFtps(){
     $ftp = isset($this->ftp) ? $this->ftp : false;
@@ -120,16 +114,16 @@ class TexterAPI{
 
   /**
    * @param string $levelName
-   * @param int $eid
+   * @param int $euid
    * -------------------------------
-   * @return array $this->ftp[$levelName][$eid] | false
+   * @return array $this->ftp[$levelName][$euid] | false
    */
-  public function getFtp(string $levelName, int $eid){
+  public function getFtp(string $levelName, int $euid){
     $ftps = $this->getFtps();
     if ($ftps === false) {
       return false;
     }else {
-      $pk = (isset($ftps[$levelName][$eid])) ? $ftps[$levelName][$eid] : false;
+      $pk = (isset($ftps[$levelName][$euid])) ? $ftps[$levelName][$euid] : false;
       if ($pk === false) {
         return false;
       }else {
@@ -143,38 +137,23 @@ class TexterAPI{
   /**
    * 固定の浮き文字を生成します
    *
-   * @param array $pos
+   * @param Vector3 $pos
    * @param string $title
    * @param string $text = ""
    * @param string $levelname = "world"
    * ------------------------
    * @return AddEntityPacket $pk
    */
-  public function makeCrftp(array $pos, string $title, string $text = "", string $levelname = "world"){
-    $pk = $this->getPacketModel("add");
-    $pk->eid = Entity::$entityCount++;
-    $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = sprintf('%0.1f', $pos[0]);
-    $pk->y = sprintf('%0.1f', $pos[1]);
-    $pk->z = sprintf('%0.1f', $pos[2]);
-    $flags = 0;
-    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
-    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
-    $pk->metadata = [
-      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
-    ];
-    $this->crftp[$levelname][$pk->eid] = $pk;
-
+  public function makeCrftp(Vector3 $pos, string $title, string $text = "", string $levelname = "world"){
+    $pk = $this->makeAddEntityPacket($pos, $title, $text);
+    $this->crftp[$levelname][$pk->entityUniqueId] = $pk;
     return $pk;
   }
 
   /**
    * 可変動の浮き文字を生成します
    *
-   * @param array $pos
+   * @param Vector3 $pos
    * @param string $title
    * @param string $text = ""
    * @param string $levelname = "world"
@@ -182,28 +161,11 @@ class TexterAPI{
    * ------------------------
    * @return AddEntityPacket $pk
    */
-  public function makeFtp(array $pos, string $title, string $text = "", string $levelname = "world", string $ownername = ""){
-    $pk = $this->getPacketModel("add");
-    $pk->eid = Entity::$entityCount++;
-    $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = sprintf('%0.1f', $pos[0]);
-    $pk->y = sprintf('%0.1f', $pos[1]);
-    $pk->z = sprintf('%0.1f', $pos[2]);
-    $flags = 0;
-    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
-    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
-    $title = str_replace("#", "\n", $title);
-    $text = str_replace("#", "\n", $text);
-    $pk->metadata = [
-      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
-    ];
+  public function makeFtp(Vector3 $pos, string $title, string $text = "", string $levelname = "world", string $ownername = ""){
+    $pk = $this->makeAddEntityPacket($pos, $title, $text);
     $pk->world = $levelname;
     $pk->owner = strtolower($ownername);
-    $this->ftp[$levelname][$pk->eid] = $pk;
-
+    $this->ftp[$levelname][$pk->entityUniqueId] = $pk;
     return $pk;
   }
 
@@ -211,33 +173,17 @@ class TexterAPI{
    * 消すことのできない浮き文字を追加します
    *
    * @param Object $player
-   * @param array $pos
+   * @param Vector3 $pos
    * @param string $title
    * @param string $text
    * -------------------
    * @return AddEntityPacket $pk or bool(false)
    */
-  public function addCrftp($player, array $pos, string $title, string $text = ""){
+  public function addCrftp($player, Vector3 $pos, string $title, string $text = ""){
     $level = $player->getLevel();
     $levelname = $level->getName();
-    $pk = $this->getPacketModel("add");
-    $pk->eid = Entity::$entityCount++;
-    $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = sprintf('%0.1f', $pos[0]);
-    $pk->y = sprintf('%0.1f', $pos[1]);
-    $pk->z = sprintf('%0.1f', $pos[2]);
-    $flags = 0;
-    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
-    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
-    $title = str_replace("#", "\n", $title);
-    $text = str_replace("#", "\n", $text);
-    $pk->metadata = [
-      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
-    ];
-    $this->crftp[$levelname][$pk->eid] = $pk;
+    $pk = $this->makeAddEntityPacket($pos, $title, $text);
+    $this->crftp[$levelname][$pk->entityUniqueId] = $pk;
     $key = count($this->main->crftps);
     if ($this->main->crftps_file->exists(--$key) === false) {
       $this->main->crftps_file->set(--$key, [
@@ -256,7 +202,7 @@ class TexterAPI{
       }
       return $pk;
     }else {
-      $this->removeFtp($player, $pk->eid);
+      $this->removeFtp($player, $pk->entityUniqueId);
       return false;
     }
   }
@@ -265,35 +211,19 @@ class TexterAPI{
    * 浮き文字を追加します
    *
    * @param Object $player
-   * @param array $pos
+   * @param Vector3 $pos
    * @param string $title
    * @param string $text
    * ------------------------
    * @return AddEntityPacket or bool(false)
    */
-  public function addFtp($player, array $pos, string $title, string $text = ""){
+  public function addFtp($player, Vector3 $pos, string $title, string $text = ""){
     $level = $player->getLevel();
     $levelName = $level->getName();
-    $pk = $this->getPacketModel("add");
-    $pk->eid = Entity::$entityCount++;
-    $pk->type = ItemEntity::NETWORK_ID;
-    $pk->x = sprintf('%0.1f', $pos[0]);
-    $pk->y = sprintf('%0.1f', $pos[1]);
-    $pk->z = sprintf('%0.1f', $pos[2]);
-    $flags = 0;
-    $flags |= 1 << Entity::DATA_FLAG_INVISIBLE;
-    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
-    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
-    $title = str_replace("#", "\n", $title);
-    $text = str_replace("#", "\n", $text);
-    $pk->metadata = [
-      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
-    ];
+    $pk = $this->makeAddEntityPacket($pos, $title, $text);
     $pk->world = $levelName;
     $pk->owner = strtolower($player->getName());
-    $this->ftp[$levelName][$pk->eid] = $pk;//オリジナルを保存
+    $this->ftp[$levelName][$pk->entityUniqueId] = $pk;//オリジナルを保存
     $key = "{$levelName}{$pk->z}{$pk->x}{$pk->y}";
     if ($this->main->ftps_file->exists($key) === false) {
       $this->main->ftps_file->set($key, [
@@ -312,7 +242,7 @@ class TexterAPI{
         $n = $pl->getName();
         if ($n === $player->getName() or $pl->isOp()) {
           $pks = clone $pk;//送信用パケット複製
-          $pks->metadata[4][1] = "[$pk->eid] ".$pks->metadata[4][1];
+          $pks->metadata[4][1] = "[$pk->entityUniqueId] ".$pks->metadata[4][1];
           $pl->dataPacket($pks);
         }else {
           $pl->dataPacket($pk);
@@ -320,7 +250,7 @@ class TexterAPI{
       }
       return $pk;
     }else {
-      $this->removeFtp($player, $pk->eid);
+      $this->removeFtp($player, $pk->entityUniqueId);
       return false;
     }
   }
@@ -329,17 +259,17 @@ class TexterAPI{
    * 指定IDの浮き文字を削除します (ftps.json)
    *
    * @param Object $player
-   * @param int $eid
+   * @param int $euid
    * ------------------
    * @return bool
    */
-  public function removeFtp($player, int $eid): bool{
+  public function removeFtp($player, int $euid): bool{
     $level = $player->getLevel();
     $levelName = $level->getName();
     //
     $pk = $this->getPacketModel("remove");
-    $pk->eid = $eid;
-    $epk = $this->getFtp($levelName, $eid);
+    $pk->entityUniqueId = $euid;
+    $epk = $this->getFtp($levelName, $euid);
     if ($epk === false) {
       return false;
     }else {
@@ -347,13 +277,13 @@ class TexterAPI{
       if ($this->main->ftps_file->exists($key) !== false) {
         $this->main->ftps_file->remove($key);
         $this->main->ftps_file->save();
-        unset($this->ftp[$levelName][$eid]);
+        unset($this->ftp[$levelName][$euid]);
         $players = $level->getPlayers();//Levelにいる人を取得
         foreach ($players as $pl) {
           $pl->dataPacket($pk);
         }
       }else {
-        unset($this->ftp[$levelName][$eid]);
+        unset($this->ftp[$levelName][$euid]);
         $players = $level->getPlayers();//Levelにいる人を取得
         foreach ($players as $pl) {
           $pl->dataPacket($pk);
@@ -379,10 +309,10 @@ class TexterAPI{
     if ($ftps === false) {
       return false;
     }else {
-      $reids = [];
-      foreach ($ftps as $levn => $eids) {
-        foreach ($eids as $eid => $pk) {
-          $reids[] = $eid;
+      $reuids = [];
+      foreach ($ftps as $levn => $euids) {
+        foreach ($euids as $euid => $pk) {
+          $reuids[] = $euid;
           $key = "{$levn}{$pk->z}{$pk->x}{$pk->y}";
           $this->main->ftps_file->remove($key);
           $this->main->ftps_file->save();
@@ -391,47 +321,46 @@ class TexterAPI{
       $pls = $this->main->getServer()->getOnlinePlayers();
       if (count($pls) !== 0) {
         foreach ($pls as $pl) {
-          $this->rFeTmP($pl, $reids);
+          $this->rFeTmP($pl, $reuids);
         }
       }
       $this->ftp = [];
-      return count($reids);
+      return count($reuids);
     }
   }
 
   /**
    * 指定ユーザーの浮き文字をすべて削除します
    *
-   * @param Object $player
    * @param string $user
    * ---------------------
    * @return int or bool
    */
-  public function removeUserFtps($player, string $user){
-    $name = strtolower($player->getName());
+  public function removeUserFtps(string $user){
+    $name = strtolower($user);
     $ftps = $this->getFtps();
     if ($ftps === false) {
       return false;
     }else {
-      $reids = [];
-      foreach ($ftps as $levn => $eids) {
-        foreach ($eids as $eid => $pk) {
+      $reuids = [];
+      foreach ($ftps as $levn => $euids) {
+        foreach ($euids as $euid => $pk) {
           if ($pk->owner === $name) {
-            $reids[] = $pk->eid;
+            $reuids[] = $pk->entityUniqueId;
             $key = "{$levn}{$pk->z}{$pk->x}{$pk->y}";
             $this->main->ftps_file->remove($key);
             $this->main->ftps_file->save();
-            unset($this->ftp[$levn][$eid]);
+            unset($this->ftp[$levn][$euid]);
           }
         }
       }
       $pls = $this->main->getServer()->getOnlinePlayers();
       if (count($pls) !== 0) {
         foreach ($pls as $pl) {
-          $this->rFeTmP($pl, $reids);
+          $this->rFeTmP($pl, $reuids);
         }
       }
-      return count($reids);
+      return count($reuids);
     }
   }
 
@@ -439,16 +368,16 @@ class TexterAPI{
    * 指定IDの浮き文字のタイトルを更新します(ftps.jsonのみ)
    *
    * @param Object $player
-   * @param int $eid
+   * @param int $euid
    * @param string $new_title
    * ------------------------
    * @return bool
    */
-  public function updateTitle($player, int $eid, string $new_title): bool{
+  public function updateTitle($player, int $euid, string $new_title): bool{
     if (isset($this->ftp)) {
       $name = $player->getName();
       $levelName = $player->getLevel()->getName();
-      $pk = $this->getFtp($levelName, $eid);
+      $pk = $this->getFtp($levelName, $euid);
       if ($pk === false) {
         return false;
       }else {
@@ -464,7 +393,7 @@ class TexterAPI{
                 $n = $pl->getName();
                 if ($pl->isOp() || $pk->owner === $n) {
                   $pks = clone $pk;//送信用パケット複製
-                  $pks->metadata[4][1] = "[$pk->eid] ".$pks->metadata[4][1];
+                  $pks->metadata[4][1] = "[$pk->entityUniqueId] ".$pks->metadata[4][1];
                   $pl->dataPacket($pks);
                 }else {
                   $pl->dataPacket($pk);
@@ -499,16 +428,16 @@ class TexterAPI{
    * 指定IDの浮き文字のテキストを更新します(ftps.jsonのみ)
    *
    * @param Object $player
-   * @param int $eid
+   * @param int $euid
    * @param array $new_text
    * ------------------------
    * @return bool
    */
-  public function updateText($player, int $eid, array $new_text): bool{
+  public function updateText($player, int $euid, array $new_text): bool{
     if (isset($this->ftp)) {
       $name = $player->getName();
       $levelName = $player->getLevel()->getName();
-      $pk = $this->getFtp($levelName, $eid);
+      $pk = $this->getFtp($levelName, $euid);
       if ($pk === false) {
         return false;
       }else {
@@ -526,7 +455,7 @@ class TexterAPI{
                 $n = $pl->getName();
                 if ($pl->isOp() || $pk->owner === $n) {
                   $pks = clone $pk;//送信用パケット複製
-                  $pks->metadata[4][1] = "[$pk->eid] ".$pks->metadata[4][1];
+                  $pks->metadata[4][1] = "[$pk->entityUniqueId] ".$pks->metadata[4][1];
                   $pl->dataPacket($pks);
                 }else {
                   $pl->dataPacket($pk);
@@ -557,8 +486,6 @@ class TexterAPI{
     }
   }
 
-/******************************************************************************/
-### 拡張ファイル関連 #################
   /**
    * @param string $type add: AddEntityPacket, remove: RemoveEntityPacket
    * --------------
@@ -580,65 +507,30 @@ class TexterAPI{
     }
   }
 
-  /**
-   * @param TexterExtension
-   */
-  public function registerEvents($extension){
-    $this->main->getServer()->getPluginManager()->registerEvents($extension, $this->main);
-  }
-
-  /**
-   * @param string $class (extension`s CommandPath)
-   */
-  public function registerCommand(string $class){
-    $command = new $class($this->main);
-    $this->main->getServer()->getCommandMap()->register("Texter", $command);
-  }
-
-  /**
-   * @return Extensions[] or bool(false)
-   */
-  public function getExtensions(){
-    $return = isset($this->main->extensions) ? $this->main->extensions : false;
-    return $return;
-  }
-
-  /**
-   * @param string $extensionName
-   * -------------------------------------
-   * @return Extension or bool(false)
-   */
-  public function getExtension(string $extensionName){
-    $return = isset($this->main->extensions[$extensionName]) ? $this->main->extensions[$extensionName] : false;
-    return $return;
-  }
-
-  /**
-   * @param string $extensionName
-   * @param string $functionName
-   * -------------------------------------
-   * @return extensionTask $task
-   */
-  public function getExtensionTask(string $extensionName, string $functionName){
-    $task = new extensionTask($this->main, $extensionName, $functionName);
-    return $task;
-  }
-
-  /**
-   * @param extensionTask $task
-   * @param string $taskType(Delayed/Repeating)
-   * @param int $period
-   */
-  public function execExtensionTask(extensionTask $task, string $taskType = "Delayed", int $period = 20){
-    $taskType = "schedule{$taskType}Task";
-    $this->main->getServer()->getScheduler()->{$taskType}($task, $period);
-  }
-
   /****************************************************************************/
-  private function rFeTmP($pl, array $reids){
-    foreach ($reids as $eid) {
+  private function makeAddEntityPacket(Vector3 $pos, string $title, string $text){
+    $pk = $this->getPacketModel("add");
+    $pk->entityUniqueId = Entity::$entityCount++;
+    $pk->entityRuntimeId = $pk->entityUniqueId;// ...huh?
+    $pk->type = ItemEntity::NETWORK_ID;
+    $pk->x = (float)sprintf('%0.1f', $pos->x);
+    $pk->y = (float)sprintf('%0.1f', $pos->y);
+    $pk->z = (float)sprintf('%0.1f', $pos->z);
+    $flags = 0;
+    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
+    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
+    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
+    $pk->metadata = [
+      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
+      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
+    ];
+    return $pk;
+  }
+
+  private function rFeTmP($pl, array $reuids){
+    foreach ($reuids as $euid) {
       $pk = $this->getPacketModel("remove");
-      $pk->eid = $eid;
+      $pk->entityUniqueId = $euid;
       $pl->dataPacket($pk);
     }
   }

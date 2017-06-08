@@ -6,9 +6,6 @@
   "commands.registered": "Command was set to enabled.",
   "commands.unavailable": "Command was set to disabled.",
 
-  "extension.load": "Loading extensions...",
-  "extension.loaded": "{count} extensions loaded.",
-
   "warning.version?": "Detected version change, you may not be able to receive support.",
 
   "update.unnecessary": "Newest version: v{curver} / No update required.",
@@ -24,9 +21,9 @@
   "command.description.txtadm": "Manage floating texts.",
 
   "command.txt.usage.line1": "Usage:",
-  "command.txt.usage.add": "/txt add [title] [message]",
-  "command.txt.usage.remove": "/txt remove [ID]",
-  "command.txt.usage.update": "/txt update <title | text> [ID] [message]",
+  "command.txt.usage.add": "/txt a(dd) <title> [message]",
+  "command.txt.usage.remove": "/txt r(emove) <ID>",
+  "command.txt.usage.update": "/txt u(pdate) <title | text> <ID> <message>",
   "command.txt.usage.indent": "When breaking a line, insert §6#§b",
 
   "command.txt.set": "Placed floating text.",
@@ -36,14 +33,12 @@
   "command.txt.permission.remove": "You don`t have permission to erase the specified floating text.",
   "command.txt.permission.update": "You don`t have permission to update the specified floating text.",
 
-  "command.txtadm.usage.allremove": "/txtadm a(ll)r(emove)",
-  "command.txtadm.usage.userremove": "/txtadm u(ser)r(emove) [userName]",
-  "command.txtadm.usage.exts": "/txtadm ext(ension)s",
+  "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
+  "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <userName>",
   "command.txtadm.usage.info": "/txtadm info",
 
   "command.txtadm.allremove": "{count} floating texts were deleted.",
   "command.txtadm.userremove": "All floating texts of {user} have been deleted.",
-  "command.txtadm.extensions": "{exts} extension files are loaded",
   "command.txtadm.notexists": "Any floating texts doesn`t exists.",
 
   "command.console": "Please use from within game",

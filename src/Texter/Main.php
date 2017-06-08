@@ -36,14 +36,14 @@ use pocketmine\Server;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 
-#Entity
+# Entity
 use pocketmine\entity\Entity;
 use pocketmine\entity\Item as ItemEntity;
 
 # Player
 use pocketmine\Player;
 
-#Item
+# Item
 use pocketmine\item\Item;
 
 # Event
@@ -51,28 +51,33 @@ use pocketmine\event\Event;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\entity\EntityLevelChangeEvent;
 
-#Command
+# Command
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\CommandExecutor;
 
-#Network
+# Math
+use pocketmine\math\Vector3;
+
+# Network
 use pocketmine\network;
 
 # Utils
 use pocketmine\utils\TextFormat as Color;
 
-#etc
+# etc
 use Texter\TexterAPI;
 use Texter\commands\TxtCommand;
 use Texter\commands\TxtAdmCommand;
 use Texter\task\worldGetTask;
 use Texter\utils\tunedConfig as Config;
 
+define("DS", DIRECTORY_SEPARATOR);
+
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v2.0.2',
-        CODENAME = 'Convallaria majalis';
+        VERSION = 'v2.1.0',
+        CODENAME = 'Convallaria majalis(鈴蘭)';
 
   /* @var developper`s option */
   public $devmode = false;
@@ -98,11 +103,10 @@ class Main extends PluginBase implements Listener{
     $this->checkServer();
     $this->checkFiles();
     $this->registerCommands();
-    $this->loadExtensions();
     $this->checkUpdate();
     $this->preparePacket();
     date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
-    $this->getLogger()->info("§a┝ ".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
+    $this->getLogger()->info("§a".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
   }
 
   /**
@@ -112,6 +116,7 @@ class Main extends PluginBase implements Listener{
     $serverName = strtolower($this->getServer()->getName());
     switch ($serverName) {
       case 'pocketmine-mp':
+      case 'pocketmine-mp-derivedversion':// BlueLight
         $this->AddEntityPacket = new network\mcpe\protocol\AddEntityPacket();
         $this->RemoveEntityPacket = new network\mcpe\protocol\RemoveEntityPacket();
       break;
@@ -153,10 +158,20 @@ class Main extends PluginBase implements Listener{
     }
     // config.yml
     $this->config = new Config($this->dir.$this->conf, Config::YAML);
-    $this->lang = $this->config->get("lang");
+    $this->lang = $this->config->get("language");
+    switch (strtolower($this->lang)) {
+      case 'jpn':
+      case 'eng':
+        # do nothing...
+      break;
+
+      default:
+        $this->lang = "eng";
+      break;
+    }
     // lang_{$this->lang}.json
     $this->file1 = "lang_{$this->lang}.json";
-    $this->messages = new Config(__DIR__."\\..\\..\\lang\\{$this->file1}", Config::JSON);
+    $this->messages = new Config(__DIR__.DS."..".DS."..".DS."lang".DS.$this->file1, Config::JSON);
     $this->getLogger()->info("§a".str_replace("{lang}", $this->lang, $this->messages->get("lang.registered")));
     // crftps.json
     $this->crftps_file = new Config($this->dir.$this->file2, Config::JSON);
@@ -180,45 +195,6 @@ class Main extends PluginBase implements Listener{
       $this->getLogger()->info("§a".$this->messages->get("commands.registered"));
     }else {
       $this->getLogger()->info("§c".$this->messages->get("commands.unavailable"));
-    }
-  }
-
-  /**
-   * 拡張ファイル読み込み
-   */
-  private function loadExtensions(){
-    $this->getLogger()->info("§a".$this->messages->get("extension.load"));
-    $dir = __DIR__."\\extensions\\";
-    $this->extensions = [];
-    //
-    if ($handle = opendir($dir)) {
-      while (($folder = readdir($handle)) !== false) {
-        if (filetype($path = $dir.$folder) === "dir" &&
-            strpos($folder, '.') === false) {
-          $e_handle = opendir($path."\\");
-          while (($file = readdir($e_handle)) !== false) {
-            if(filetype($filePath = $path."\\".$file) == "file" &&
-               strpos($file, '.php') !== false) {
-              $classpath = str_replace(".php", "", strstr($filePath, "Texter\\extensions"));
-              try {
-                $ext = new $classpath($this);
-                if (get_parent_class($ext) === "Texter\\extensions\\TexterExtension") {
-                  $this->extensions[$ext->getName()] = $ext;
-                  $ext->initialize();
-                }
-              }catch (\Exception $e) {
-                $this->getLogger()->warning($e->getMessage());
-              }
-            }
-          }
-          closedir($e_handle);
-        }
-      }
-      closedir($handle);
-    }
-    $exts = count($this->extensions);
-    if ($exts !== 0) {
-      $this->getLogger()->info("§a┝ ".str_replace("{count}", $exts, $this->messages->get("extension.loaded")));
     }
   }
 
@@ -286,7 +262,7 @@ class Main extends PluginBase implements Listener{
       }
       //
       if ($this->getServer()->loadLevel($v["WORLD"])) {
-        $pos = [$v["Xvec"], $v["Yvec"], $v["Zvec"]];
+        $pos = new Vector3($v["Xvec"], $v["Yvec"], $v["Zvec"]);
         $this->api->makeCrftp($pos, $title, $text, $v["WORLD"]);
       }else {
         $this->getLogger()->notice(str_replace("{world}", $v["WORLD"], $this->messages->get("world.not.exists")));
@@ -300,7 +276,7 @@ class Main extends PluginBase implements Listener{
       }
       //
       if ($this->getServer()->loadLevel($v["WORLD"])) {
-        $pos = [$v["Xvec"], $v["Yvec"], $v["Zvec"]];
+        $pos = new Vector3($v["Xvec"], $v["Yvec"], $v["Zvec"]);
         $this->api->makeFtp($pos, $title, $text, $v["WORLD"], $v["OWNER"]);
       }else {
         $this->getLogger()->notice(str_replace("{world}", $v["WORLD"], $this->messages->get("world.not.exists")));
@@ -312,11 +288,11 @@ class Main extends PluginBase implements Listener{
    * ワールド変更時のdespawn処理
    *
    * @param Player $player
-   * @param int $eid
+   * @param int $euid
    */
-  private function removeWorldChangeFtp(Player $player, string $eid){
+  private function removeWorldChangeFtp(Player $player, string $euid){
     $rpk = clone $this->RemoveEntityPacket;
-    $rpk->eid = $eid;
+    $rpk->entityUniqueId = $euid;
 
     $player->dataPacket($rpk);
   }
@@ -350,7 +326,7 @@ class Main extends PluginBase implements Listener{
       foreach ($this->api->ftp[$levn] as $pk) {
         if ($n === $pk->owner or $p->isOp()) {
           $pks = clone $pk;
-          $pks->metadata[4][1] = "[$pks->eid] ".$pks->metadata[4][1];
+          $pks->metadata[4][1] = "[$pks->entityUniqueId] ".$pks->metadata[4][1];
           $p->dataPacket($pks);
         }else {
           $p->dataPacket($pk);
@@ -365,12 +341,12 @@ class Main extends PluginBase implements Listener{
       $levn = $p->getLevel()->getName();
       if (isset($this->api->ftp[$levn])) {
         foreach ($this->api->ftp[$levn] as $ftp) {
-          $this->removeWorldChangeFtp($p, $ftp->eid);
+          $this->removeWorldChangeFtp($p, $ftp->entityUniqueId);
         }
       }
       if (isset($this->api->crftp[$levn])) {
         foreach ($this->api->crftp[$levn] as $crftp) {
-          $this->removeWorldChangeFtp($p, $crftp->eid);
+          $this->removeWorldChangeFtp($p, $crftp->entityUniqueId);
         }
       }
       $task = new worldGetTask($this, $p);

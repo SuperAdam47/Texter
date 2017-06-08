@@ -11,9 +11,9 @@ Please report on Issue tracker or report it on Twitter.
 ## Commands
 | \ |command|argument|alias|
 |:--:|:--:|:--:|:--:|
-|Add text|`/txt add`|`[title] [text]`|`/txt a`|
-|Remove text|`/txt remove`|`[ID]`|`/txt r`|
-|Update text|`/txt update`|`[title, text] [ID] [message]`|`/txt u`|
+|Add text|`/txt add`|`<title> [text]`|`/txt a`|
+|Remove text|`/txt remove`|`<ID>`|`/txt r`|
+|Update text|`/txt update`|`<title, text> <ID> <message>`|`/txt u`|
 |Help|`/txt or /txt help`|`none`|`/txt ?`|
 
 **Please use `#` for line breaks.**
@@ -41,9 +41,9 @@ It is output as follows.
 ## コマンド
 | \ |コマンド|引数|エイリアス|
 |:--:|:--:|:--:|:--:|
-|浮き文字追加|`/txt add`|`[タイトル] [テキスト]`|`/txt a`|
-|浮き文字削除|`/txt remove`|`[ID]`|`/txt r`|
-|浮き文字更新|`/txt update`|`[title, text] [ID] [メッセージ]`|`/txt u`|
+|浮き文字追加|`/txt add`|`<タイトル> [テキスト]`|`/txt a`|
+|浮き文字削除|`/txt remove`|`<ID>`|`/txt r`|
+|浮き文字更新|`/txt update`|`<タイトル, テキスト> <ID> <メッセージ>`|`/txt u`|
 |help|`/txt or /txt help`|`無し`|`/txt ?`|
 
 **改行の際には `#` を使用してください。**

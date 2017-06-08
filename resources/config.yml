@@ -4,9 +4,9 @@
 # Texter config file
 # Texter 設定ファイル
 
-# set language (jpn or eng)
-# 言語を設定してください
-lang: jpn
+# set language (eng or jpn)
+# 言語を設定してください (eng or jpn)
+language: jpn
 
 # set timezone
 # タイムゾーンを設定してください

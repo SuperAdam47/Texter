@@ -6,9 +6,6 @@
   "commands.registered": "コマンドは使用可能に設定されました",
   "commands.unavailable": "コマンドは使用不能に設定されました",
 
-  "extension.load": "拡張ファイルをロードしています...",
-  "extension.loaded": "{count} 個の拡張ファイルをロードしました",
-
   "warning.version?": "バージョンの変更を検知しました。バグが発生した場合、製作者は一切の責任を負いません。",
 
   "update.unnecessary": "最新バージョン: v{curver} / アップデートは必要ありません",
@@ -24,9 +21,9 @@
   "command.description.txtadm": "浮き文字の管理をします。",
 
   "command.txt.usage.line1": "使用方法:",
-  "command.txt.usage.add": "/txt add [タイトル] [メッセージ]",
-  "command.txt.usage.remove": "/txt remove [ID]",
-  "command.txt.usage.update": "/txt update <title | text> [ID] [テキスト]",
+  "command.txt.usage.add": "/txt a(dd) <タイトル> <メッセージ>",
+  "command.txt.usage.remove": "/txt r(emove) <ID>",
+  "command.txt.usage.update": "/txt u(pdate) <title | text> <ID> <テキスト>",
   "command.txt.usage.indent": "改行したい場合は§6#§bを挿入",
 
   "command.txt.set": "浮き文字を設置しました。",
@@ -36,14 +33,12 @@
   "command.txt.permission.remove": "この浮き文字を消す権限がありません。",
   "command.txt.permission.update": "指定された浮き文字を更新する権限がありません。",
 
-  "command.txtadm.usage.allremove": "/txtadm a(ll)r(emove)",
-  "command.txtadm.usage.userremove": "/txtadm u(ser)r(emove) [ユーザー名]",
-  "command.txtadm.usage.exts": "/txtadm ext(ension)s",
+  "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
+  "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <ユーザー名>",
   "command.txtadm.usage.info": "/txtadm info",
 
   "command.txtadm.allremove": "{count} 個の浮き文字を削除しました。",
   "command.txtadm.userremove": "{user} の浮き文字をすべて削除しました。",
-  "command.txtadm.extensions": "{exts} 個の拡張ファイルが読み込まれています。",
   "command.txtadm.notexists": "浮き文字が一つもありません。",
 
   "command.console": "ゲーム内から使用してください。",

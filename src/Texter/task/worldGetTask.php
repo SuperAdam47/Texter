@@ -1,4 +1,5 @@
 <?php
+
 namespace Texter\task;
 
 use Texter\Main;
@@ -33,7 +34,7 @@ class worldGetTask extends PluginTask{
       foreach ($this->main->ftp[$levn] as $pk) {
         if ($n === $pk->owner or $p->isOp()) {
           $pks = clone $pk;
-          $pks->metadata[4][1] = "[$pks->eid] ".$pks->metadata[4][1];
+          $pks->metadata[4][1] = "[$pks->entityUniqueId] ".$pks->metadata[4][1];
           $p->dataPacket($pks);
         }else {
           $p->dataPacket($pk);

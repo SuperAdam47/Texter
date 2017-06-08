@@ -1,10 +1,8 @@
 name: Texter
 main: Texter\Main
-version: 2.0.2
+version: 2.1.0
 api:
-  - 2.0.0
   - 3.0.0
-  - 4.0.0
   - 3.0.0-ALPHA5 #pmmp/PocketMine-MP
 author: fuyutsuki
 authors:
@@ -14,6 +12,7 @@ authors:
  - ogiwara
  - Shootsta_ERU0531
  - Toganon
+ - ShadowArt
 website: https://twitter.com/y_fyi
 
 permissions:

@@ -2,13 +2,16 @@
 
 namespace Texter\commands;
 
-#pocketmine
+# pocketmine
 use pocketmine\Player;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 
-#texter
+# Math
+use pocketmine\math\Vector3;
+
+# texter
 use Texter\Main;
 
 /**
@@ -43,8 +46,8 @@ class TxtCommand extends Command{
               $text = str_replace("#", "\n", implode(" ", $texts));
             }else {
               $text = "";
-            }
-            $pos = [sprintf('%0.1f', $s->x), sprintf('%0.1f', $s->y+1), $z = sprintf('%0.1f', $s->z)];
+            }// TODO: 要調整(Y座標)
+            $pos = new Vector3(sprintf('%0.1f', $s->x), sprintf('%0.1f', $s->y+1), $z = sprintf('%0.1f', $s->z));
             $result = $this->api->addFtp($s, $pos, $title, $text);
             if ($result !== false){
               $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.set"));
@@ -65,7 +68,7 @@ class TxtCommand extends Command{
               $s->sendMessage("§b[Texter] §c".$this->api->getMessage("txt.doesn`t.exists"));
             }else {
               if ($s->isOp() || $ftp->owner === $s->getName()) {
-                $result = $this->api->removeFtp($s, $ftp->eid);
+                $result = $this->api->removeFtp($s, $ftp->entityUniqueId);
                 if (!$result) {
                   $s->sendMessage("§b[Texter] ".$this->api->getMessage("txt.doesn`t.exists"));
                 }else {
