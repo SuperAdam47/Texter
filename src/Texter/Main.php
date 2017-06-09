@@ -116,7 +116,6 @@ class Main extends PluginBase implements Listener{
     $serverName = strtolower($this->getServer()->getName());
     switch ($serverName) {
       case 'pocketmine-mp':
-      case 'pocketmine-mp-derivedversion':// BlueLight
         $this->AddEntityPacket = new network\mcpe\protocol\AddEntityPacket();
         $this->RemoveEntityPacket = new network\mcpe\protocol\RemoveEntityPacket();
       break;
