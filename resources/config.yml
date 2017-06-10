@@ -1,21 +1,32 @@
-# eng guide
+configVersion: 10
+
 # 日本語 ガイド
+# eng guide
 
-# Texter config file
 # Texter 設定ファイル
+# Texter config file
 
-# set language (eng or jpn)
 # 言語を設定してください (eng or jpn)
+# set language (eng or jpn)
 language: jpn
 
-# set timezone
 # タイムゾーンを設定してください
+# set timezone
 timezone: Asia/Tokyo
 
-# When set to true, update notification is displayed at startup
 # もし起動時にアップデートの通知が必要ならtrue, 必要ないならfalseにしてください
+# When set to true, update notification is displayed at startup
 checkUpdate: true
 
-# If you want to disable the command, prease set it to false
 # コマンドを使用不可にしたい場合はfalseにしてください
+# If you want to disable the command, prease set it to false
 canUseCommands: true
+
+# Write "new" if the path to Add/RemoveEntityPacket is
+# pocketmine\network\mcpe\protocol\...,
+# if not, please write "old".
+
+# Add/RemoveEntityPacketのパスが
+# pocketmine\newwork\mcpe\protocol\...なら"new"と記載し、
+# そうでなければ"old"と記載して下さい。
+path: new

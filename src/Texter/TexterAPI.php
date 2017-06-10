@@ -67,7 +67,20 @@ class TexterAPI{
   }
 
   /**
-   * get from langage file
+   * get using language
+   * @return string jpn | eng
+   */
+  public function getLanguage(): string{
+    $lang = $this->main->config->get("language");
+    switch (strtolower($lang)) {
+      case 'jpn': return "jpn"; break;
+      case 'eng': return "eng"; break;
+      default:    return "eng"; break;
+    }
+  }
+
+  /**
+   * get from language file
    * @param string $key
    * ---------------------------
    * @return string $message

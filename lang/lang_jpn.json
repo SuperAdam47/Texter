@@ -2,6 +2,7 @@
   "on.enable": "が読み込まれました。",
   "on.disable": "が無効化されました",
   "lang.registered": "言語は{lang} に設定されました",
+  "config.update": "config.yml {newer} => 一度config.ymlを削除してください。",
 
   "commands.registered": "コマンドは使用可能に設定されました",
   "commands.unavailable": "コマンドは使用不能に設定されました",

@@ -76,7 +76,7 @@ define("DS", DIRECTORY_SEPARATOR);
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v2.1.0',
+        VERSION = 'v2.1.1',
         CODENAME = 'Convallaria majalis(鈴蘭)';
 
   /* @var developper`s option */
@@ -100,31 +100,13 @@ class Main extends PluginBase implements Listener{
    * 初期化処理
    */
   private function initialize(){
-    $this->checkServer();
     $this->checkFiles();
+    $this->checkPath();
     $this->registerCommands();
     $this->checkUpdate();
     $this->preparePacket();
     date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
     $this->getLogger()->info("§a".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
-  }
-
-  /**
-   * サーバー確認(パス変更の為)
-   */
-  private function checkServer(){
-    $serverName = strtolower($this->getServer()->getName());
-    switch ($serverName) {
-      case 'pocketmine-mp':
-        $this->AddEntityPacket = new network\mcpe\protocol\AddEntityPacket();
-        $this->RemoveEntityPacket = new network\mcpe\protocol\RemoveEntityPacket();
-      break;
-
-      default:
-        $this->AddEntityPacket = new network\protocol\AddEntityPacket();
-        $this->RemoveEntityPacket = new network\protocol\RemoveEntityPacket();
-      break;
-    }
   }
 
   /**
@@ -157,27 +139,41 @@ class Main extends PluginBase implements Listener{
     }
     // config.yml
     $this->config = new Config($this->dir.$this->conf, Config::YAML);
-    $this->lang = $this->config->get("language");
-    switch (strtolower($this->lang)) {
-      case 'jpn':
-      case 'eng':
-        # do nothing...
-      break;
-
-      default:
-        $this->lang = "eng";
-      break;
-    }
+    $this->lang = $this->api->getLanguage();
     // lang_{$this->lang}.json
     $this->file1 = "lang_{$this->lang}.json";
     $this->messages = new Config(__DIR__.DS."..".DS."..".DS."lang".DS.$this->file1, Config::JSON);
     $this->getLogger()->info("§a".str_replace("{lang}", $this->lang, $this->messages->get("lang.registered")));
+    // checkConfigVersion
+    $newer = 10;
+    if (!$this->config->exists("configVersion") ||
+        $this->config->get("configVersion") < $newer) {
+      $this->getLogger()->notice(str_replace("{newer}", "[{$newer}]", $this->messages->get("config.update")));
+    }
     // crftps.json
     $this->crftps_file = new Config($this->dir.$this->file2, Config::JSON);
     $this->crftps = $this->crftps_file->getAll();
     // ftps.json
     $this->ftps_file = new Config($this->dir.$this->file3, Config::JSON);
     $this->ftps = $this->ftps_file->getAll();
+  }
+
+  /**
+   * サーバー確認(パス変更の為)
+   */
+  private function checkPath(){
+    $path = strtolower($this->config->get("path"));
+    switch ($path) {
+      case 'new':
+        $this->AddEntityPacket = new network\mcpe\protocol\AddEntityPacket();
+        $this->RemoveEntityPacket = new network\mcpe\protocol\RemoveEntityPacket();
+      break;
+
+      default:
+        $this->AddEntityPacket = new network\protocol\AddEntityPacket();
+        $this->RemoveEntityPacket = new network\protocol\RemoveEntityPacket();
+      break;
+    }
   }
 
   /**
@@ -255,8 +251,8 @@ class Main extends PluginBase implements Listener{
   private function preparePacket(){
     foreach ($this->crftps as $v) {
       $title = str_replace("#", "\n", $v["TITLE"]);
-      $text  = str_replace("#", "\n", $v["TEXT"]);
-      if (is_null($v["WORLD"]) or $v["WORLD"] === "default"){
+      $text = isset($v["TEXT"]) ? str_replace("#", "\n", $v["TEXT"]) : "";
+      if (is_null($v["WORLD"]) || $v["WORLD"] === "default"){
         $v["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
       }
       //
@@ -269,8 +265,8 @@ class Main extends PluginBase implements Listener{
     }
     foreach ($this->ftps as $v) {
       $title = str_replace("#", "\n", $v["TITLE"]);
-      $text  = str_replace("#", "\n", $v["TEXT"]);
-      if (is_null($v["WORLD"]) or $v["WORLD"] === "default"){
+      $text = isset($v["TEXT"]) ? str_replace("#", "\n", $v["TEXT"]) : "";
+      if (is_null($v["WORLD"]) || $v["WORLD"] === "default"){
         $v["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
       }
       //

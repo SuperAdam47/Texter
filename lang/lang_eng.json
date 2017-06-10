@@ -2,6 +2,7 @@
   "on.enable": "Enabled.",
   "on.disable": "Disabled.",
   "lang.registered": "Language was set to {lang}",
+  "config.update": "config.yml version {newer} => Please delete config.yml once.",
 
   "commands.registered": "Command was set to enabled.",
   "commands.unavailable": "Command was set to disabled.",
