@@ -104,7 +104,6 @@ class Main extends PluginBase implements Listener{
     $this->checkPath();
     $this->registerCommands();
     $this->checkUpdate();
-    $this->preparePacket();
     date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
     $this->getLogger()->info("§a".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
   }
@@ -298,10 +297,11 @@ class Main extends PluginBase implements Listener{
    */
   public function onLoad(){
     $this->initAPI();
+    $this->initialize();
   }
 
   public function onEnable(){
-    $this->initialize();
+    $this->preparePacket();
     $this->getServer()->getPluginManager()->registerEvents($this,$this);
     $this->getLogger()->info(Color::GREEN.self::NAME." ".self::VERSION." - ".Color::BLUE."\"".self::CODENAME."\" ".Color::GREEN.$this->messages->get("on.enable"));
   }
@@ -311,14 +311,16 @@ class Main extends PluginBase implements Listener{
     $lev = $p->getLevel();
     $levn = $lev->getName();
     //
-    if (isset($this->api->crftp[$levn])) {
-      foreach ($this->api->crftp[$levn] as $pk) {
+    $crftps = ($this->api->getCrftps()) ? $this->api->getCrftps() : false;
+    if (isset($crftps[$levn])) {
+      foreach ($crftps[$levn] as $pk) {;
         $p->dataPacket($pk);
       }
     }
-    if (isset($this->api->ftp[$levn])) {
-      $n = $p->getName();
-      foreach ($this->api->ftp[$levn] as $pk) {
+    $ftps = ($this->api->getFtps()) ? $this->api->getFtps() : false;
+    if (isset($ftps[$levn])) {
+      $n = $strtolower($p->getName());
+      foreach ($ftps[$levn] as $pk) {
         if ($n === $pk->owner or $p->isOp()) {
           $pks = clone $pk;
           $pks->metadata[4][1] = "[$pks->entityUniqueId] ".$pks->metadata[4][1];
@@ -334,14 +336,18 @@ class Main extends PluginBase implements Listener{
     $p = $e->getEntity();
     if ($p instanceof Player){
       $levn = $p->getLevel()->getName();
-      if (isset($this->api->ftp[$levn])) {
-        foreach ($this->api->ftp[$levn] as $ftp) {
-          $this->removeWorldChangeFtp($p, $ftp->entityUniqueId);
+      if ($crftps = $this->api->getCrftps() !== false) {
+        if (isset($crftps[$levn])) {
+          foreach ($crftps[$levn] as $crftp) {
+            $this->removeWorldChangeFtp($p, $crftp->entityUniqueId);
+          }
         }
       }
-      if (isset($this->api->crftp[$levn])) {
-        foreach ($this->api->crftp[$levn] as $crftp) {
-          $this->removeWorldChangeFtp($p, $crftp->entityUniqueId);
+      if ($ftps = $this->api->getFtps() !== false) {
+        if (isset($ftps[$levn])) {
+          foreach ($ftps[$levn] as $ftp) {
+            $this->removeWorldChangeFtp($p, $ftp->entityUniqueId);
+          }
         }
       }
       $task = new worldGetTask($this, $p);

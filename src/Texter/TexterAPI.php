@@ -46,9 +46,9 @@ use Texter\task\extensionTask;
 class TexterAPI{
 
   /* @var Crftp[$levelName][] = $pk */
-  public $crftp = [],
+  private $crftp = [],
   /* @var Ftp[$levelName][] = $pk */
-         $ftp = [];
+          $ftp = [];
   /* @var TexterAPI */
   private static $instance = null;
 
@@ -520,10 +520,9 @@ class TexterAPI{
     }
   }
 
-  /****************************************************************************/
-  private function makeAddEntityPacket(Vector3 $pos, string $title, string $text){
+  public function makeAddEntityPacket(Vector3 $pos, string $title, string $text, int $id = 0){
     $pk = $this->getPacketModel("add");
-    $pk->entityUniqueId = Entity::$entityCount++;
+    $pk->entityUniqueId = ($id === 0) ? Entity::$entityCount++ : $id;
     $pk->entityRuntimeId = $pk->entityUniqueId;// ...huh?
     $pk->type = ItemEntity::NETWORK_ID;
     $pk->x = (float)sprintf('%0.1f', $pos->x);

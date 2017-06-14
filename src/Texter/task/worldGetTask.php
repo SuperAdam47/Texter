@@ -14,7 +14,6 @@ class worldGetTask extends PluginTask{
 
   public function __construct(Main $main, Player $p){
     parent::__construct($main);
-    $this->main = $main;
     $this->api = $main->getAPI();
     $this->p = $p;
   }
@@ -24,14 +23,16 @@ class worldGetTask extends PluginTask{
     $lev = $p->getLevel();
     $levn = $lev->getName();
     //
-    if (isset($this->main->crftp[$levn])) {
-      foreach ($this->main->crftp[$levn] as $pk) {
+    $crftps = ($this->api->getCrftps()) ? $this->api->getCrftps() : false;
+    if (isset($crftps[$levn])) {
+      foreach ($crftps[$levn] as $pk) {;
         $p->dataPacket($pk);
       }
     }
-    if (isset($this->main->ftp[$levn])) {
-      $n = $p->getName();
-      foreach ($this->main->ftp[$levn] as $pk) {
+    $ftps = ($this->api->getFtps()) ? $this->api->getFtps() : false;
+    if (isset($ftps[$levn])) {
+      $n = $strtolower($p->getName());
+      foreach ($ftps[$levn] as $pk) {
         if ($n === $pk->owner or $p->isOp()) {
           $pks = clone $pk;
           $pks->metadata[4][1] = "[$pks->entityUniqueId] ".$pks->metadata[4][1];
