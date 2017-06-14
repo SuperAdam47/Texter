@@ -25,7 +25,7 @@ class worldGetTask extends PluginTask{
     //
     $crftps = ($this->api->getCrftps()) ? $this->api->getCrftps() : false;
     if (isset($crftps[$levn])) {
-      foreach ($crftps[$levn] as $pk) {;
+      foreach ($crftps[$levn] as $pk) {
         $p->dataPacket($pk);
       }
     }
