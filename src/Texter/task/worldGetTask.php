@@ -31,7 +31,7 @@ class worldGetTask extends PluginTask{
     }
     $ftps = ($this->api->getFtps()) ? $this->api->getFtps() : false;
     if (isset($ftps[$levn])) {
-      $n = $strtolower($p->getName());
+      $n = strtolower($p->getName());
       foreach ($ftps[$levn] as $pk) {
         if ($n === $pk->owner or $p->isOp()) {
           $pks = clone $pk;
