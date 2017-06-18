@@ -3,7 +3,8 @@ main: Texter\Main
 version: 2.1.1
 api:
   - 3.0.0
-  - 3.0.0-ALPHA5 #pmmp/PocketMine-MP
+  - 3.0.0-ALPHA5
+  - 3.0.0-ALPHA6 #pmmp/PocketMine-MP
 author: fuyutsuki
 authors:
 # SpecialThanks(敬称略)
