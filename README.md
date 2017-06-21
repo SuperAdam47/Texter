@@ -2,10 +2,11 @@
 
 ## Texter
 Texter is plugin that displays and deletes FloatingTextPerticle supported to multi-world.  
-Latest: ver **2.1.1** _Convallaria majalis(鈴蘭)_
+Latest: ver **2.1.2** _Convallaria majalis(鈴蘭)_
 
 ### Supporting
 - [x] MCPE v1.1.0
+- [x] MCPE v1.1.1
 - [x] Multi-world display
 
 ***
