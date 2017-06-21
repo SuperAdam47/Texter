@@ -47,7 +47,6 @@ use pocketmine\Player;
 use pocketmine\item\Item;
 
 # Event
-use pocketmine\event\Event;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\entity\EntityLevelChangeEvent;
 
