@@ -95,18 +95,6 @@ class Main extends PluginBase implements Listener{
    * Private APIs
    */
   /**
-   * 初期化処理
-   */
-  private function initialize(){
-    $this->checkFiles();
-    $this->checkPath();
-    $this->registerCommands();
-    $this->checkUpdate();
-    date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
-    $this->getLogger()->info("§a".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
-  }
-
-  /**
    * API初期化
    */
   private function initAPI(){
@@ -295,11 +283,17 @@ class Main extends PluginBase implements Listener{
    */
   public function onLoad(){
     $this->initAPI();
-    $this->initialize();
+    $this->checkFiles();
+    $this->checkPath();
+    $this->registerCommands();
+    $this->checkUpdate();// 2.1.4 TODO: Async
+    date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
+    $this->getLogger()->info("§a".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
   }
 
   public function onEnable(){
     $this->preparePacket();
+    //$this->loadExtentions();// 2.1.4 TODO: Revert
     $this->getServer()->getPluginManager()->registerEvents($this,$this);
     $this->getLogger()->info(Color::GREEN.self::NAME." ".self::VERSION." - ".Color::BLUE."\"".self::CODENAME."\" ".Color::GREEN.$this->messages->get("on.enable"));
   }
