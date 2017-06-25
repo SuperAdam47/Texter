@@ -69,6 +69,7 @@ use Texter\TexterAPI;
 use Texter\commands\TxtCommand;
 use Texter\commands\TxtAdmCommand;
 use Texter\task\worldGetTask;
+use Texter\task\checkUpdateTask;
 use Texter\utils\tunedConfig as Config;
 
 define("DS", DIRECTORY_SEPARATOR);
@@ -78,7 +79,7 @@ class Main extends PluginBase implements Listener{
         VERSION = 'v2.1.4',
         CODENAME = 'Convallaria majalis(鈴蘭)';
 
-  /* @var developper`s option */
+        /* @var developper`s option */
   public $devmode = false;
 
   /****************************************************************************/
@@ -184,49 +185,36 @@ class Main extends PluginBase implements Listener{
   private function checkUpdate(){
     $this->devmode = false;
     if ((bool)$this->config->get("checkUpdate")) {
-      try {
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-          CURLOPT_URL => "https://api.github.com/repos/fuyutsuki/Texter/releases",
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_USERAGENT => "getGitHubAPI",
-          CURLOPT_SSL_VERIFYPEER => false
-        ]);
-        $json = curl_exec($curl);
-
-        $errorno = curl_errno($curl);
-        if ($errorno) {
-          $error = curl_error($curl);
-          throw new \Exception($error);
-        }
-        curl_close($curl);
-        $data = json_decode($json, true);
-
-        $newver = str_replace("v", "", $data[0]["name"]);
-        $curver = str_replace("v", "", self::VERSION);
-        $flag = null;
-        if ($this->getDescription()->getVersion() !== $curver) {
-          $this->getLogger()->warning($this->messages->get("warning.version?"));
-          $flag = 0;
-        }
-        if (version_compare($newver, $curver, "=")) {
-          $this->getLogger()->notice(str_replace("{curver}", $curver, $this->messages->get("update.unnecessary")));
-        }elseif (version_compare($newver, $curver, "<") and
-                 is_null($flag)) {
-          $this->devmode = true;// NOTE:for developper option
-        }elseif (is_null($flag)) {
-          $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $curver], $this->messages->get("update.available.1")));
-          $this->getLogger()->notice($this->messages->get("update.available.2"));
-          $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
-        }
-      } catch (\Exception $e) {
-        $this->getLogger()->warning($e->getMessage());
-      }
+      $async = new checkUpdateTask();
+      $this->getServer()->getScheduler()->scheduleAsyncTask($async);
     }else {
       $curver = str_replace("v", "", self::VERSION);
       if ($this->getDescription()->getVersion() !== $curver) {
         $this->getLogger()->warning($this->messages->get("warning.version?"));
       }
+    }
+  }
+
+  /**
+   * バージョン比較
+   */
+  public function versionCompare($data){
+    $newver = str_replace("v", "", $data[0]["name"]);
+    $curver = str_replace("v", "", self::VERSION);
+    $flag = null;
+    if ($this->getDescription()->getVersion() !== $curver) {
+      $this->getLogger()->warning($this->messages->get("warning.version?"));
+      $flag = 0;
+    }
+    if (version_compare($newver, $curver, "=")) {
+      $this->getLogger()->notice(str_replace("{curver}", $curver, $this->messages->get("update.unnecessary")));
+    }elseif (version_compare($newver, $curver, "<") &&
+             is_null($flag)) {
+      $this->devmode = true;// NOTE:for developper option
+    }elseif (is_null($flag)) {
+      $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $curver], $this->messages->get("update.available.1")));
+      $this->getLogger()->notice($this->messages->get("update.available.2"));
+      $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
     }
   }
 
@@ -286,8 +274,8 @@ class Main extends PluginBase implements Listener{
     $this->checkFiles();
     $this->checkPath();
     $this->registerCommands();
-    $this->checkUpdate();// 2.1.4 TODO: Async
-    date_default_timezone_set($this->config->get("timezone"));//時刻合わせ
+    $this->checkUpdate();// 2.1.4 DONE: Async
+    date_default_timezone_set($this->config->get("timezone"));
     $this->getLogger()->info("§a".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
   }
 
