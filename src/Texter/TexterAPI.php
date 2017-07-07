@@ -561,7 +561,7 @@ class TexterAPI{
    * @return Extensions[] or bool(false)
    */
   public function getExtensions(){
-    $return = isset($this->main->extensions) ? $this->main->extensions : false;
+    $return = (count($this->main->extensions) !== 0) ? $this->main->extensions : false;
     return $return;
   }
 

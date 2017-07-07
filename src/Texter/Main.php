@@ -76,11 +76,13 @@ define("DS", DIRECTORY_SEPARATOR);
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v2.1.4-b1',
+        VERSION = 'v2.1.4-b2',
         CODENAME = 'Convallaria majalis(鈴蘭)';
 
         /* NOTE: for developpers option */
   public $devmode = false;
+        /* array $extensions */
+  public $extensions = [];
 
   /****************************************************************************/
 
@@ -264,7 +266,6 @@ class Main extends PluginBase implements Listener{
   private function loadExtentions(){
     $this->getLogger()->info("§a".$this->messages->get("extension.load"));
     $dir = $this->dir.$this->extDir."\\";
-    $this->extensions = [];
     //
     if ($handle = opendir($dir)) {
       while (($folder = readdir($handle)) !== false) {
