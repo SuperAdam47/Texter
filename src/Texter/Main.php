@@ -76,7 +76,7 @@ define("DS", DIRECTORY_SEPARATOR);
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v2.1.4',
+        VERSION = 'v2.1.3-a2',
         CODENAME = 'Convallaria majalis(鈴蘭)';
 
         /* @var developper`s option */
@@ -172,7 +172,7 @@ class Main extends PluginBase implements Listener{
         new TxtCommand($this),
         new TxtAdmCommand($this)
       ];
-      $map->registerAll("Texter", $commands);
+      $map->registerAll(self::NAME, $commands);
       $this->getLogger()->info("§a".$this->messages->get("commands.registered"));
     }else {
       $this->getLogger()->info("§c".$this->messages->get("commands.unavailable"));
@@ -185,12 +185,11 @@ class Main extends PluginBase implements Listener{
   private function checkUpdate(){
     $this->devmode = false;
     if ((bool)$this->config->get("checkUpdate")) {
-      $async = new checkUpdateTask();
-      $this->getServer()->getScheduler()->scheduleAsyncTask($async);
-    }else {
-      $curver = str_replace("v", "", self::VERSION);
-      if ($this->getDescription()->getVersion() !== $curver) {
-        $this->getLogger()->warning($this->messages->get("warning.version?"));
+      try {
+        $async = new checkUpdateTask();
+        $this->getServer()->getScheduler()->scheduleAsyncTask($async);
+      } catch (Exception $e) {
+        $this->getLogger()->warning($e->getMessage());
       }
     }
   }
@@ -203,18 +202,20 @@ class Main extends PluginBase implements Listener{
     $curver = str_replace("v", "", self::VERSION);
     $flag = null;
     if ($this->getDescription()->getVersion() !== $curver) {
-      $this->getLogger()->warning($this->messages->get("warning.version?"));
+      $this->getLogger()->warning($this->messages->get("version.warning"));
       $flag = 0;
     }
-    if (version_compare($newver, $curver, "=")) {
-      $this->getLogger()->notice(str_replace("{curver}", $curver, $this->messages->get("update.unnecessary")));
-    }elseif (version_compare($newver, $curver, "<") &&
-             is_null($flag)) {
-      $this->devmode = true;// NOTE:for developper option
-    }elseif (is_null($flag)) {
-      $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $curver], $this->messages->get("update.available.1")));
-      $this->getLogger()->notice($this->messages->get("update.available.2"));
-      $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
+    if (strpos($curver, "-") !== false) {
+      $this->getLogger()->notice($this->messages->get("version.pre"));
+      $this->devmode = true;// NOTE: for developper`s option
+    }else {
+      if (version_compare($newver, $curver, "=")) {
+        $this->getLogger()->notice(str_replace("{curver}", $curver, $this->messages->get("update.unnecessary")));
+      }elseif ($flag === null) {
+        $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $curver], $this->messages->get("update.available.1")));
+        $this->getLogger()->notice($this->messages->get("update.available.2"));
+        $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
+      }
     }
   }
 
@@ -274,7 +275,7 @@ class Main extends PluginBase implements Listener{
     $this->checkFiles();
     $this->checkPath();
     $this->registerCommands();
-    $this->checkUpdate();// 2.1.4 DONE: Async
+    $this->checkUpdate();
     date_default_timezone_set($this->config->get("timezone"));
     $this->getLogger()->info("§a".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
   }
@@ -292,13 +293,13 @@ class Main extends PluginBase implements Listener{
     $levn = $lev->getName();
     //
     $crftps = ($this->api->getCrftps()) ? $this->api->getCrftps() : false;
-    if (isset($crftps[$levn])) {
+    if ($crftps[$levn] !== false) {
       foreach ($crftps[$levn] as $pk) {;
         $p->dataPacket($pk);
       }
     }
     $ftps = ($this->api->getFtps()) ? $this->api->getFtps() : false;
-    if (isset($ftps[$levn])) {
+    if ($ftps[$levn] !== false) {
       $n = strtolower($p->getName());
       foreach ($ftps[$levn] as $pk) {
         if ($n === $pk->owner or $p->isOp()) {

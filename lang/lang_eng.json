@@ -1,13 +1,14 @@
 {
-  "on.enable": "Enabled.",
-  "on.disable": "Disabled.",
-  "lang.registered": "Language was set to {lang}",
+  "on.enable": "is Enabled.",
+  "on.disable": "is Disabled.",
+  "lang.registered": "Language was set to {lang}.",
   "config.update": "config.yml version {newer} => Please delete config.yml once.",
 
   "commands.registered": "Command was set to enabled.",
   "commands.unavailable": "Command was set to disabled.",
 
-  "warning.version?": "Detected version change, you may not be able to receive support.",
+  "version.pre": "This version is under development. Operation may be unstable.",
+  "version.warning": "Detected version change, you may not be able to receive support.",
 
   "update.unnecessary": "Newest version: v{curver} / No update required.",
   "update.available.1": "Newest version: v{newver} / Current version: v{curver}",

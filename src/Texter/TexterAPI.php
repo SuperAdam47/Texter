@@ -290,17 +290,11 @@ class TexterAPI{
       if ($this->main->ftps_file->exists($key) !== false) {
         $this->main->ftps_file->remove($key);
         $this->main->ftps_file->save();
-        unset($this->ftp[$levelName][$euid]);
-        $players = $level->getPlayers();//Levelにいる人を取得
-        foreach ($players as $pl) {
-          $pl->dataPacket($pk);
-        }
-      }else {
-        unset($this->ftp[$levelName][$euid]);
-        $players = $level->getPlayers();//Levelにいる人を取得
-        foreach ($players as $pl) {
-          $pl->dataPacket($pk);
-        }
+      }
+      unset($this->ftp[$levelName][$euid]);
+      $players = $level->getPlayers();//Levelにいる人を取得
+      foreach ($players as $pl) {
+        $pl->dataPacket($pk);
       }
       return true;
     }

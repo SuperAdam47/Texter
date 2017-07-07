@@ -7,7 +7,8 @@
   "commands.registered": "コマンドは使用可能に設定されました",
   "commands.unavailable": "コマンドは使用不能に設定されました",
 
-  "warning.version?": "バージョンの変更を検知しました。バグが発生した場合、製作者は一切の責任を負いません。",
+  "version.pre": "このバージョンは開発中のものです。動作が不安定な場合があります。",
+  "version.warning": "バージョンの変更を検知しました。バグが発生した場合、製作者は一切の責任を負いません。",
 
   "update.unnecessary": "最新バージョン: v{curver} / アップデートは必要ありません",
   "update.available.1": "最新バージョン: v{newver} / 現在のバージョン: v{curver}",
