@@ -76,7 +76,7 @@ define("DS", DIRECTORY_SEPARATOR);
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v2.1.4-b2',
+        VERSION = 'v2.1.4-b3',
         CODENAME = 'Convallaria majalis(鈴蘭)';
 
         /* NOTE: for developpers option */
@@ -210,19 +210,15 @@ class Main extends PluginBase implements Listener{
    */
   public function versionCompare($data){
     $newver = str_replace("v", "", $data[0]["name"]);
-    $flag = null;
     if ($this->getDescription()->getVersion() !== $this->curver) {
       $this->getLogger()->warning($this->messages->get("version.warning"));
-      $flag = 0;
     }
-    if (!$this->devmode) {
-      if (version_compare($newver, $this->curver, "=")) {
-        $this->getLogger()->notice(str_replace("{curver}", $this->curver, $this->messages->get("update.unnecessary")));
-      }elseif ($flag === null) {
-        $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $this->curver], $this->messages->get("update.available.1")));
-        $this->getLogger()->notice($this->messages->get("update.available.2"));
-        $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
-      }
+    if (version_compare($newver, $this->curver, "=")) {
+      $this->getLogger()->notice(str_replace("{curver}", $this->curver, $this->messages->get("update.unnecessary")));
+    }elseif (version_compare($newver, $this->curver, ">")){
+      $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $this->curver], $this->messages->get("update.available.1")));
+      $this->getLogger()->notice($this->messages->get("update.available.2"));
+      $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
     }
   }
 
