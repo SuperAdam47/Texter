@@ -55,6 +55,20 @@ class TxtAdmCommand extends Command{
             }
           break;
 
+          case 'extensions':
+          case 'exts':
+            $exts = $this->api->getExtensions();
+            if ($exts === false) {
+              $s->sendMessage("§b[Texter] ".str_replace("{exts}", "0", $this->api->getMessage("command.txtadm.extensions")));
+            }else {
+              $n = [];
+              foreach ($exts as $ext) {
+                $n[] = "{$ext->getName()}  v{$ext->getVersion()}";
+              }
+              $s->sendMessage("§b[Texter] ".str_replace("{exts}", count($n), $this->api->getMessage("command.txtadm.extensions"))."\n§a - ".implode("\n - ", $n));
+            }
+          break;
+
           case 'info':
             $result = $this->count();
             $s->sendMessage("§b[Texter] \n§bcrftps: §6".$result[0]."\n§bftps: §6".$result[1]."\n§7".Main::NAME." ".Main::VERSION." - ".Main::CODENAME);
@@ -62,29 +76,43 @@ class TxtAdmCommand extends Command{
 
           case 'help':
           case 'h':
-            $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.allremove")."\n§b".$this->api->getMessage("command.txtadm.usage.userremove")."\n§b".$this->api->getMessage("command.txtadm.usage.info"));
+            $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.allremove")."\n§b".$this->api->getMessage("command.txtadm.usage.userremove")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
           break;
 
           case 'test':
-            if ($this->main->devmode === true) {
-              /*for ($i=1; $i<51; $i++) {
+            if ($this->main->devmode) {
+              for ($i=1; $i<51; $i++) {
                 $this->api->addFtp($s, [$s->x+$i, $s->y, $s->z], "test", "§$i");
-              }*/
+              }
               var_dump($this->api->getCrftps());
             }
           break;
 
           default:
-            $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.allremove")."\n§b".$this->api->getMessage("command.txtadm.usage.userremove")."\n§b".$this->api->getMessage("command.txtadm.usage.info"));
+            $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.allremove")."\n§b".$this->api->getMessage("command.txtadm.usage.userremove")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
           break;
         }
       }else {
-        $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.allremove")."\n§b".$this->api->getMessage("command.txtadm.usage.userremove")."\n§b".$this->api->getMessage("command.txtadm.usage.info"));
+        $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.allremove")."\n§b".$this->api->getMessage("command.txtadm.usage.userremove")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
       }
       return true;
     }else {
       if (isset($args[0])) {
         switch (strtolower($args[0])) {
+          case 'extensions':
+          case 'exts':
+            $exts = $this->api->getExtensions();
+            if ($exts === false) {
+              $this->main->getLogger()->info("§b".str_replace("{exts}", "0", $this->api->getMessage("command.txtadm.extensions")));
+            }else {
+              $n = [];
+              foreach ($exts as $ext) {
+                $n[] = "{$ext->getName()} v{$ext->getVersion()}";
+              }
+              $this->main->getLogger()->info("§b".str_replace("{exts}", count($n), $this->api->getMessage("command.txtadm.extensions"))."\n§a - ".implode("\n - ", $n));
+          }
+          break;
+
           case 'info':
             $result = $this->count();
             $this->main->getLogger()->info("§bcrftps: §6".$result[0]." §b| ftps: §6".$result[1]." §b| version: §7".Main::NAME." ".Main::VERSION." - ".Main::CODENAME);
@@ -92,7 +120,7 @@ class TxtAdmCommand extends Command{
 
           case 'help':
           case 'h':
-            $this->main->getLogger()->info("§b".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.info"));
+            $this->main->getLogger()->info("§b".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
           break;
 
           default:
@@ -100,7 +128,7 @@ class TxtAdmCommand extends Command{
           break;
         }
       }else {
-        $this->main->getLogger()->info("§b".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.info"));
+        $this->main->getLogger()->info("§b".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
       }
     }
   }

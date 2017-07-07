@@ -1,13 +1,18 @@
 {
-  "on.enable": "Enabled.",
-  "on.disable": "Disabled.",
-  "lang.registered": "Language was set to {lang}",
+  "on.enable": "is Enabled.",
+  "on.disable": "is Disabled.",
+  "lang.registered": "Language was set to {lang}.",
   "config.update": "config.yml version {newer} => Please delete config.yml once.",
+
+  "extension.load": "Loading extensions...",
+  "extension.loaded": "§a┝ {name} v{ver} is Loaded.",
+  "extension.notexists": "The specified extension file does not exist.",
 
   "commands.registered": "Command was set to enabled.",
   "commands.unavailable": "Command was set to disabled.",
 
-  "warning.version?": "Detected version change, you may not be able to receive support.",
+  "version.pre": "This version is under development. Operation may be unstable.",
+  "version.warning": "Detected version change, you may not be able to receive support.",
 
   "update.unnecessary": "Newest version: v{curver} / No update required.",
   "update.available.1": "Newest version: v{newver} / Current version: v{curver}",
@@ -36,13 +41,15 @@
 
   "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
   "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <userName>",
+  "command.txtadm.usage.exts": "/txtadm ext(ension)s",
   "command.txtadm.usage.info": "/txtadm info",
 
   "command.txtadm.allremove": "{count} floating texts were deleted.",
   "command.txtadm.userremove": "All floating texts of {user} have been deleted.",
+  "command.txtadm.extensions": "{exts} extension files are loaded.",
   "command.txtadm.notexists": "Any floating texts doesn`t exists.",
 
-  "command.console": "Please use from within game",
+  "command.console": "Please use from within game.",
 
   "txt.doesn`t.exists": "The specified ID floating text does not exist.",
   "txt.user.doesn`t.exists": "The float text of the specified user does not exist."
