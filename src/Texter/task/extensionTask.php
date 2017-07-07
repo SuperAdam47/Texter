@@ -27,7 +27,7 @@ class extensionTask extends PluginTask{
         $ext->{$this->funcName}();
       }
     }else {
-      $this->main->getLogger()->error("Extensionが取得できていません");// TODO: 2.1.4
+      $this->main->getLogger()->error($this->api->getMessage("extension.notexists"));
     }
   }
 }

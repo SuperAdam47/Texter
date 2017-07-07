@@ -6,6 +6,7 @@
 
   "extension.load": "Loading extensions...",
   "extension.loaded": "§a┝ {name} v{ver} is Loaded.",
+  "extension.notexists": "The specified extension file does not exist.",
 
   "commands.registered": "Command was set to enabled.",
   "commands.unavailable": "Command was set to disabled.",

@@ -6,6 +6,7 @@
 
   "extension.load": "拡張ファイルを読み込んでいます...",
   "extension.loaded": "§a┝ {name} v{ver} が読み込まれました。",
+  "extension.notexists": "指定された拡張ファイルは存在しません。",
 
   "commands.registered": "コマンドは使用可能に設定されました。",
   "commands.unavailable": "コマンドは使用不能に設定されました。",
