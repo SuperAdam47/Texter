@@ -541,4 +541,58 @@ class TexterAPI{
     }
   }
   /****************************************************************************/
+  ### 拡張ファイル関連 #################
+  /**
+   * @param TexterExtension
+   */
+  public function registerEvents($extension){
+    $this->main->getServer()->getPluginManager()->registerEvents($extension, $this->main);
+  }
+
+  /**
+   * @param string $class (extension`s CommandPath)
+   */
+  public function registerCommand(string $class){
+    $command = new $class($this->main);
+    $this->main->getServer()->getCommandMap()->register("Texter", $command);
+  }
+
+  /**
+   * @return Extensions[] or bool(false)
+   */
+  public function getExtensions(){
+    $return = isset($this->main->extensions) ? $this->main->extensions : false;
+    return $return;
+  }
+
+  /**
+   * @param string $extensionName
+   * -------------------------------------
+   * @return Extension or bool(false)
+   */
+  public function getExtension(string $extensionName){
+    $return = isset($this->main->extensions[$extensionName]) ? $this->main->extensions[$extensionName] : false;
+    return $return;
+  }
+
+  /**
+   * @param string $extensionName
+   * @param string $functionName
+   * -------------------------------------
+   * @return extensionTask $task
+   */
+  public function getExtensionTask(string $extensionName, string $functionName){
+    $task = new extensionTask($this->main, $extensionName, $functionName);
+    return $task;
+  }
+
+  /**
+   * @param extensionTask $task
+   * @param string $taskType(Delayed/Repeating)
+   * @param int $period
+   */
+  public function execExtensionTask(extensionTask $task, string $taskType = "Delayed", int $period = 20){
+    $taskType = "schedule{$taskType}Task";
+    $this->main->getServer()->getScheduler()->{$taskType}($task, $period);
+  }
 }

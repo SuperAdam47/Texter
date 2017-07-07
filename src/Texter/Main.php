@@ -76,10 +76,10 @@ define("DS", DIRECTORY_SEPARATOR);
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v2.1.3-a2',
+        VERSION = 'v2.1.4-b1',
         CODENAME = 'Convallaria majalis(鈴蘭)';
 
-        /* @var developper`s option */
+        /* NOTE: for developpers option */
   public $devmode = false;
 
   /****************************************************************************/
@@ -106,13 +106,17 @@ class Main extends PluginBase implements Listener{
    * ファイルチェック
    */
   private function checkFiles(){
-    $this->dir   = $this->getDataFolder();
-    $this->conf  = "config.yml";
-    $this->file2 = "crftps.json";
-    $this->file3 = "ftps.json";
+    $this->dir    = $this->getDataFolder();
+    $this->extDir = "extensions";
+    $this->conf   = "config.yml";
+    $this->file2  = "crftps.json";
+    $this->file3  = "ftps.json";
     //
     if(!file_exists($this->dir)){
       mkdir($this->dir);
+    }
+    if(!file_exists($this->dir.$this->extDir)){
+      mkdir($this->dir.$this->extDir);
     }
     if(!file_exists($this->dir.$this->conf)){
       file_put_contents($this->dir.$this->conf, $this->getResource($this->conf));
@@ -142,6 +146,8 @@ class Main extends PluginBase implements Listener{
     // ftps.json
     $this->ftps_file = new Config($this->dir.$this->file3, Config::JSON);
     $this->ftps = $this->ftps_file->getAll();
+    //
+    $this->curver = str_replace("v", "", self::VERSION);
   }
 
   /**
@@ -183,7 +189,6 @@ class Main extends PluginBase implements Listener{
    * アップデート確認
    */
   private function checkUpdate(){
-    $this->devmode = false;
     if ((bool)$this->config->get("checkUpdate")) {
       try {
         $async = new checkUpdateTask();
@@ -192,6 +197,10 @@ class Main extends PluginBase implements Listener{
         $this->getLogger()->warning($e->getMessage());
       }
     }
+    if (strpos($this->curver, "-") !== false) {
+      $this->getLogger()->notice($this->messages->get("version.pre"));
+      $this->devmode = true;
+    }
   }
 
   /**
@@ -199,20 +208,16 @@ class Main extends PluginBase implements Listener{
    */
   public function versionCompare($data){
     $newver = str_replace("v", "", $data[0]["name"]);
-    $curver = str_replace("v", "", self::VERSION);
     $flag = null;
-    if ($this->getDescription()->getVersion() !== $curver) {
+    if ($this->getDescription()->getVersion() !== $this->curver) {
       $this->getLogger()->warning($this->messages->get("version.warning"));
       $flag = 0;
     }
-    if (strpos($curver, "-") !== false) {
-      $this->getLogger()->notice($this->messages->get("version.pre"));
-      $this->devmode = true;// NOTE: for developper`s option
-    }else {
-      if (version_compare($newver, $curver, "=")) {
-        $this->getLogger()->notice(str_replace("{curver}", $curver, $this->messages->get("update.unnecessary")));
+    if (!$this->devmode) {
+      if (version_compare($newver, $this->curver, "=")) {
+        $this->getLogger()->notice(str_replace("{curver}", $this->curver, $this->messages->get("update.unnecessary")));
       }elseif ($flag === null) {
-        $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $curver], $this->messages->get("update.available.1")));
+        $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $this->curver], $this->messages->get("update.available.1")));
         $this->getLogger()->notice($this->messages->get("update.available.2"));
         $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
       }
@@ -254,6 +259,48 @@ class Main extends PluginBase implements Listener{
   }
 
   /**
+   * 拡張ファイル読み込み
+   */
+  private function loadExtentions(){
+    $this->getLogger()->info("§a".$this->messages->get("extension.load"));
+    $dir = $this->dir.$this->extDir."\\";
+    $this->extensions = [];
+    //
+    if ($handle = opendir($dir)) {
+      while (($folder = readdir($handle)) !== false) {
+        if (filetype($path = $dir.$folder) === "dir" &&
+            strpos($folder, '.') === false) {
+          $e_handle = opendir($path."\\");
+          while (($file = readdir($e_handle)) !== false) {
+            if(filetype($filePath = $path."\\".$file) == "file" &&
+               strpos($file, '.php') !== false) {
+              include_once($filePath);
+              if ($this->devmode) $this->getLogger()->info("§7filePath: $filePath");
+              $classPath = str_replace(".php", "", strstr($filePath, "Texter/extensions\\"));
+              $classPath = str_replace("Texter/extensions\\", "", $classPath);
+              if ($this->devmode) $this->getLogger()->info("§7classPath: $classPath");
+              try {
+                if (class_exists($classPath, true)) {
+                  $ext = new $classPath($this);
+                  if (get_parent_class($ext) === "Texter\\extensions\\TexterExtension") {
+                    $this->extensions[$ext->getName()] = $ext;
+                    $ext->extDir = $dir.$ext->getName();
+                    $ext->initialize();
+                  }
+                }
+              }catch (\Exception $e) {
+                $this->getLogger()->warning($e->getMessage());
+              }
+            }
+          }
+          closedir($e_handle);
+        }
+      }
+      closedir($handle);
+    }
+  }
+
+  /**
    * ワールド変更時のdespawn処理
    *
    * @param Player $player
@@ -282,7 +329,7 @@ class Main extends PluginBase implements Listener{
 
   public function onEnable(){
     $this->preparePacket();
-    //$this->loadExtentions();// 2.1.4 TODO: Revert
+    $this->loadExtentions();
     $this->getServer()->getPluginManager()->registerEvents($this,$this);
     $this->getLogger()->info(Color::GREEN.self::NAME." ".self::VERSION." - ".Color::BLUE."\"".self::CODENAME."\" ".Color::GREEN.$this->messages->get("on.enable"));
   }

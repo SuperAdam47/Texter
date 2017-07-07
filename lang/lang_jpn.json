@@ -1,11 +1,14 @@
 {
   "on.enable": "が読み込まれました。",
-  "on.disable": "が無効化されました",
-  "lang.registered": "言語は{lang} に設定されました",
+  "on.disable": "が無効化されました。",
+  "lang.registered": "言語は{lang} に設定されました。",
   "config.update": "config.yml {newer} => 一度config.ymlを削除してください。",
 
-  "commands.registered": "コマンドは使用可能に設定されました",
-  "commands.unavailable": "コマンドは使用不能に設定されました",
+  "extension.load": "拡張ファイルを読み込んでいます...",
+  "extension.loaded": "§a┝ {name} v{ver} が読み込まれました。",
+
+  "commands.registered": "コマンドは使用可能に設定されました。",
+  "commands.unavailable": "コマンドは使用不能に設定されました。",
 
   "version.pre": "このバージョンは開発中のものです。動作が不安定な場合があります。",
   "version.warning": "バージョンの変更を検知しました。バグが発生した場合、製作者は一切の責任を負いません。",
@@ -15,7 +18,7 @@
   "update.available.2": "アップデートが利用可能です。",
   "update.available.3": "URL: {url}",
 
-  "timezone": "タイムゾーンは {zone} に設定されました",
+  "timezone": "タイムゾーンは {zone} に設定されました。",
 
   "world.not.exists": "記載されたワールド名 {world} は存在しません。",
 
@@ -37,10 +40,12 @@
 
   "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
   "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <ユーザー名>",
+  "command.txtadm.usage.exts": "/txtadm ext(ension)s",
   "command.txtadm.usage.info": "/txtadm info",
 
   "command.txtadm.allremove": "{count} 個の浮き文字を削除しました。",
   "command.txtadm.userremove": "{user} の浮き文字をすべて削除しました。",
+  "command.txtadm.extensions": "{exts} 個の拡張ファイルが読み込まれています。",
   "command.txtadm.notexists": "浮き文字が一つもありません。",
 
   "command.console": "ゲーム内から使用してください。",
