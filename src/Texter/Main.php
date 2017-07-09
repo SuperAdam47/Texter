@@ -76,7 +76,7 @@ define("DS", DIRECTORY_SEPARATOR);
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v2.1.5',
+        VERSION = 'v2.1.6',
         CODENAME = 'Convallaria majalis(鈴蘭)';
 
         /* NOTE: for developpers option */

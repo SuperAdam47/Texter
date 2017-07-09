@@ -518,6 +518,7 @@ class TexterAPI{
     $pk = $this->getPacketModel("add");
     $pk->entityUniqueId = ($id === 0) ? Entity::$entityCount++ : $id;
     $pk->entityRuntimeId = $pk->entityUniqueId;// ...huh?
+    $pk->eid = $pk->entityRuntimeId;// for old packetObject
     $pk->type = ItemEntity::NETWORK_ID;
     $pk->x = (float)sprintf('%0.1f', $pos->x);
     $pk->y = (float)sprintf('%0.1f', $pos->y);
