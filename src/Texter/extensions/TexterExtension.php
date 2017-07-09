@@ -29,9 +29,9 @@ abstract class TexterExtension{
 
   /* @return filestream or null */
   public function getResource(string $filename){
-    $filename = rtrim(str_replace("\\", "/", $filename), "/");
-    if(file_exists($this->getDir()."resources\\".$filename)){
-      return fopen($this->getDir()."resources\\".$filename, "rb");
+    $filename = rtrim(str_replace(DS, "/", $filename), "/");
+    if(file_exists($this->getDir()."resources".DS.$filename)){
+      return fopen($this->getDir()."resources".DS.$filename, "rb");
     }else {
       return null;
     }
@@ -39,7 +39,7 @@ abstract class TexterExtension{
 
   /* @return string dir path */
   public function getDir(): string{
-    return $this->extDir."\\";
+    return $this->extDir.DS;
   }
 
   /* @return string version */

@@ -76,7 +76,7 @@ define("DS", DIRECTORY_SEPARATOR);
 
 class Main extends PluginBase implements Listener{
   const NAME = 'Texter',
-        VERSION = 'v2.1.4',
+        VERSION = 'v2.1.5',
         CODENAME = 'Convallaria majalis(鈴蘭)';
 
         /* NOTE: for developpers option */
@@ -261,20 +261,21 @@ class Main extends PluginBase implements Listener{
    */
   private function loadExtentions(){
     $this->getLogger()->info("§a".$this->messages->get("extension.load"));
-    $dir = $this->dir.$this->extDir."\\";
+    $dir = $this->dir.$this->extDir.DS;
     //
     if ($handle = opendir($dir)) {
       while (($folder = readdir($handle)) !== false) {
         if (filetype($path = $dir.$folder) === "dir" &&
             strpos($folder, '.') === false) {
-          $e_handle = opendir($path."\\");
+          $e_handle = opendir($path.DS);
           while (($file = readdir($e_handle)) !== false) {
-            if(filetype($filePath = $path."\\".$file) == "file" &&
+            if(filetype($filePath = $path.DS.$file) == "file" &&
                strpos($file, '.php') !== false) {
               include_once($filePath);
               if ($this->devmode) $this->getLogger()->info("§7filePath: $filePath");
-              $classPath = str_replace(".php", "", strstr($filePath, "Texter/extensions\\"));
-              $classPath = str_replace("Texter/extensions\\", "", $classPath);
+              $replace = [".php", "Texter/extensions".DS, "/"];
+              $result = ["", "", "\\"];
+              $classPath = str_replace($replace, $result, strstr($filePath, "Texter/extensions".DS));
               if ($this->devmode) $this->getLogger()->info("§7classPath: $classPath");
               try {
                 if (class_exists($classPath, true)) {
@@ -337,13 +338,13 @@ class Main extends PluginBase implements Listener{
     $levn = $lev->getName();
     //
     $crftps = ($this->api->getCrftps()) ? $this->api->getCrftps() : false;
-    if ($crftps[$levn] !== false) {
+    if (isset($crftps[$levn])) {
       foreach ($crftps[$levn] as $pk) {;
         $p->dataPacket($pk);
       }
     }
     $ftps = ($this->api->getFtps()) ? $this->api->getFtps() : false;
-    if ($ftps[$levn] !== false) {
+    if (isset($ftps[$levn])) {
       $n = strtolower($p->getName());
       foreach ($ftps[$levn] as $pk) {
         if ($n === $pk->owner or $p->isOp()) {
