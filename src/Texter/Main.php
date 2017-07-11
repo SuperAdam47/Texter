@@ -304,7 +304,7 @@ class Main extends PluginBase implements Listener{
    * @param Player $player
    * @param int $euid
    */
-  private function removeWorldChangeFtp(Player $player, string $euid){
+  private function removeWorldChangeFtp(Player $player, int $euid){
     $rpk = clone $this->RemoveEntityPacket;
     $rpk->entityUniqueId = $euid;
 
@@ -362,14 +362,14 @@ class Main extends PluginBase implements Listener{
     $p = $e->getEntity();
     if ($p instanceof Player){
       $levn = $p->getLevel()->getName();
-      if ($crftps = $this->api->getCrftps() !== false) {
+      if (($crftps = $this->api->getCrftps()) !== false) {
         if (isset($crftps[$levn])) {
           foreach ($crftps[$levn] as $crftp) {
             $this->removeWorldChangeFtp($p, $crftp->entityUniqueId);
           }
         }
       }
-      if ($ftps = $this->api->getFtps() !== false) {
+      if (($ftps = $this->api->getFtps()) !== false) {
         if (isset($ftps[$levn])) {
           foreach ($ftps[$levn] as $ftp) {
             $this->removeWorldChangeFtp($p, $ftp->entityUniqueId);
