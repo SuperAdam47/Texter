@@ -282,6 +282,7 @@ class TexterAPI{
     //
     $pk = $this->getPacketModel("remove");
     $pk->entityUniqueId = $euid;
+    $pk->eid = $euid;// for old packetObject
     $epk = $this->getFtp($levelName, $euid);
     if ($epk === false) {
       return false;
