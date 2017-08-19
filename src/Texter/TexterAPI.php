@@ -32,10 +32,15 @@ use pocketmine\Player;
 
 # Entity
 use pocketmine\entity\Entity;
-use pocketmine\entity\Item as ItemEntity;
+
+# Item
+use pocketmine\item\Item;
 
 # Math
 use pocketmine\math\Vector3;
+
+# e.t.c.
+use pocketmine\utils\UUID;
 
 # Texter
 use Texter\task\extensionTask;
@@ -517,10 +522,11 @@ class TexterAPI{
 
   public function makeAddEntityPacket(Vector3 $pos, string $title, string $text, int $id = 0){
     $pk = $this->getPacketModel("add");
+    $pk->uuid = UUID::fromRandom();
     $pk->entityUniqueId = ($id === 0) ? Entity::$entityCount++ : $id;
     $pk->entityRuntimeId = $pk->entityUniqueId;// ...huh?
     $pk->eid = $pk->entityRuntimeId;// for old packetObject
-    $pk->type = ItemEntity::NETWORK_ID;
+    $pk->item = Item::get(Item::AIR);
     $pk->x = (float)sprintf('%0.1f', $pos->x);
     $pk->y = (float)sprintf('%0.1f', $pos->y);
     $pk->z = (float)sprintf('%0.1f', $pos->z);
@@ -531,6 +537,7 @@ class TexterAPI{
     $pk->metadata = [
       Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
       Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
+      Entity::DATA_SCALE => [Entity::DATA_TYPE_FLOAT, 0]
     ];
     return $pk;
   }
