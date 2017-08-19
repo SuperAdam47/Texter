@@ -1,0 +1,6 @@
+# http://editorconfig.org/
+root = yes
+
+[*]
+indent_size = 2
+indent_style = space
