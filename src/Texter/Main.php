@@ -159,12 +159,12 @@ class Main extends PluginBase implements Listener{
     $path = strtolower($this->config->get("path"));
     switch ($path) {
       case 'new':
-        $this->AddEntityPacket = new network\mcpe\protocol\AddEntityPacket();
+        $this->AddEntityPacket = new network\mcpe\protocol\AddPlayerPacket();
         $this->RemoveEntityPacket = new network\mcpe\protocol\RemoveEntityPacket();
       break;
 
       default:
-        $this->AddEntityPacket = new network\protocol\AddEntityPacket();
+        $this->AddEntityPacket = new network\protocol\AddPlayerPacket();
         $this->RemoveEntityPacket = new network\protocol\RemoveEntityPacket();
       break;
     }
