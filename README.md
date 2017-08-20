@@ -12,8 +12,8 @@ Latest: ver **2.1.9** _Convallaria majalis(鈴蘭)_
 Select Language: [English](#eng), [日本語](#jpn)
 
 ***
-## English
 <a name="eng"></a>
+## English
 
 ### Supporting
 - [x] Multi-language (eng, jpn)
@@ -60,8 +60,8 @@ It is output as follows.
 <img src="https://cloud.githubusercontent.com/assets/16377174/24609877/642d64f6-18b7-11e7-9b38-488e0ada3f1e.JPG" width="320px">
 
 ***
-## 日本語
 <a name="jpn"></a>
+## 日本語
 
 ### 対応状況
 - [x] 複数言語 (eng, jpn)
