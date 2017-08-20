@@ -8,29 +8,25 @@ It may have many bugs.
 Texter is plugin that displays and deletes FloatingTextPerticle supported to multi-world.  
 Latest: ver **2.1.9** _Convallaria majalis(鈴蘭)_  
 
-### Supporting(サポート)
+## Overview
+Select Language: [English](#eng), [日本語](#jpn)
+
+***
+## English
+<a name="eng"></a>
+
+### Supporting
+- [x] Multi-language (eng, jpn)
 - [x] Multi-world display
 - [x] MCPE v1.1.x
 - [ ] Minecraft(Bedrock) v1.2.x // TODO
 
-### Notice(お知らせ)
-##### English
+### Notice
 If your src is `pocketmine\network\protocol\Packets`, please write `path: old` in *config.yml* .  
 If not, please write `path: new`(initial value)  
 **※It will be deleted in the future.**
 
-##### 日本語
-もしあなたがお使いのsrcが `pocketmine\network\protocol\{パケット}` という構成の場合、*config.yml* に、`path: old` と書いてください。  
-そうでない場合は、 `path: new` (初期値)で動作します。  
-**※今後この機能は削除されます**
-
-***
-## English
-About bug report  
-Please report on Issue tracker or report it on Twitter.
-
-## Commands
-
+### Commands
 #### General command
 | \ |command|argument|alias|
 |:--:|:--:|:--:|:--:|
@@ -49,9 +45,8 @@ Please report on Issue tracker or report it on Twitter.
 
 **Please use `#` for line breaks.**
 
-## json notation
-
-``` json
+### json notation
+```json
 "0": {
   "WORLD" : "worldName",
   "Xvec" : 128,
@@ -66,11 +61,20 @@ It is output as follows.
 
 ***
 ## 日本語
-バグ報告について  
-こちらでIssueを建てていただいてもかまいませんし、Twitterにて報告して頂いても構いません。
+<a name="jpn"></a>
 
-## コマンド
+### 対応状況
+- [x] 複数言語 (eng, jpn)
+- [x] 複数ワールドの表示
+- [x] MCPE v1.1.x
+- [ ] Minecraft(Bedrockエンジン) v1.2.x // TODO
 
+### お知らせ
+もしあなたがお使いのsrcが `pocketmine\network\protocol\{パケット}` という構成の場合、*config.yml* に、`path: old` と書いてください。  
+そうでない場合は、 `path: new` (初期値)で動作します。  
+**※今後この機能は削除されます**
+
+### コマンド
 #### 一般用コマンド
 | \ |コマンド|引数|エイリアス|
 |:--:|:--:|:--:|:--:|
@@ -89,9 +93,8 @@ It is output as follows.
 
 **改行の際には `#` を使用してください。**
 
-## json記法
-
-``` json
+### json記法
+```json
 "0": {
   "WORLD" : "world",
   "Xvec" : 128,
