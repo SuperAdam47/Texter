@@ -1,2 +1,2 @@
-*.yml
-*.json
+/config.yml
+/*.json
