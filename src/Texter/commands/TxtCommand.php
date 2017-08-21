@@ -13,6 +13,7 @@ use pocketmine\math\Vector3;
 
 # texter
 use Texter\Main;
+use Texter\language\Lang;
 
 /**
  * @var TxtCommand
@@ -22,7 +23,8 @@ class TxtCommand extends Command{
   public function __construct(Main $main){
     $this->main = $main;
     $this->api = $main->getAPI();
-    parent::__construct("txt", $this->api->getMessage("command.description.txt"), "/txt <add | remove | update | help>");//登録
+    $this->lang = Lang::getInstance();
+    parent::__construct("txt", $this->lang->transrateString("command.description.txt"), "/txt <add | remove | update | help>");//登録
     //
     $this->setPermission("texter.command.txt");
   }

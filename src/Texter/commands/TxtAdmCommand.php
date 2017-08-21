@@ -10,6 +10,7 @@ use pocketmine\command\CommandSender;
 
 # texter
 use Texter\Main;
+use Texter\language\Lang;
 
 /**
  * @var TxtAdmCommand
@@ -19,7 +20,8 @@ class TxtAdmCommand extends Command{
   public function __construct(Main $main){
     $this->main = $main;
     $this->api = $main->getAPI();
-    parent::__construct("txtadm", $this->api->getMessage("command.description.txtadm"), "/txtadm <ar | ur | info>", ["tadm"]);//登録
+    $this->lang = Lang::getInstance();
+    parent::__construct("txtadm", $this->lang->transrateString("command.description.txtadm"), "/txtadm <ar | ur | info>", ["tadm"]);//登録
     //
     $this->setPermission("texter.command.txtadm");
   }

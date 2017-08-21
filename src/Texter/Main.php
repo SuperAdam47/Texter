@@ -122,7 +122,7 @@ class Main extends PluginBase {
   public function onEnable(){
     //$this->preparePacket();
     //$this->getServer()->getPluginManager()->registerEvents($this,$this);
-    $this->getLogger()->info(Color::GREEN.self::NAME." ".self::VERSION." - ".Color::BLUE."\"".self::CODENAME."\" ".Color::GREEN.$this->language->transrateString("on.enable"));
+    $this->getLogger()->info(TF::GREEN.self::NAME." ".self::VERSION." - ".TF::BLUE."\"".self::CODENAME."\" ".TF::GREEN.$this->language->transrateString("on.enable"));
   }
 
   /****************************************************************************/
@@ -193,9 +193,9 @@ class Main extends PluginBase {
         new TxtAdmCommand($this)
       ];
       $map->registerAll(self::NAME, $commands);
-      $this->getLogger()->info($this->language->transrateString("commands.registered"));
+      $this->getLogger()->info(TF::GREEN.$this->language->transrateString("commands.registered"));
     }else {
-      $this->getLogger()->info($this->language->transrateString("commands.unavailable"));
+      $this->getLogger()->info(TF::RED.$this->language->transrateString("commands.unavailable"));
     }
   }
 
