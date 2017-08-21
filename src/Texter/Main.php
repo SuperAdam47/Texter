@@ -62,14 +62,15 @@ use pocketmine\math\Vector3;
 use pocketmine\network;
 
 # Utils
-use pocketmine\utils\TextFormat as Color;
+use pocketmine\utils\TextFormat as TF;
 
 # etc
-use Texter\TexterAPI;
+use Texter\TexterApi;
 use Texter\commands\TxtCommand;
 use Texter\commands\TxtAdmCommand;
 use Texter\task\WorldGetTask;
 use Texter\task\CheckUpdateTask;
+use Texter\language\Lang;
 use Texter\utils\TunedConfig as Config;
 
 define("DS", DIRECTORY_SEPARATOR);
@@ -80,14 +81,24 @@ class Main extends PluginBase {
   const VERSION = "v2.2.0-b3";
   const CODENAME = "Papilio dehaanii(カラスアゲハ)";
 
+  const FILE_CONFIG = "config.yml";
+  const FILE_CRFTP = "crftps.json";
+  const FILE_FTP = "ftps.json";
+
   const CONFIG_VERSION = 10;
 
   /** @var bool $devmode */
   public $devmode = false;
+  /** @var string $dir */
+  public $dir = "";
   /** @var TexterApi $api */
   private $api = null;
-  /** @var array $extensions */
-  private $extensions = [];
+  /** @var Lang $language */
+  private $language = null;
+  /** @var AddPlayerPacket $apk */
+  private $apk = null;
+  /** @var RemoveEntityPacket $rpk */
+  private $rpk = null;
 
   /****************************************************************************/
   /* Public functions */
@@ -104,66 +115,117 @@ class Main extends PluginBase {
     $this->initApi();
     $this->checkPath();
     $this->registerCommands();
-    $this->checkUpdate();
-    $this->setTimezone();
+    //$this->checkUpdate();
+    //$this->setTimezone();
   }
 
   public function onEnable(){
-
+    //$this->preparePacket();
+    //$this->getServer()->getPluginManager()->registerEvents($this,$this);
+    $this->getLogger()->info(Color::GREEN.self::NAME." ".self::VERSION." - ".Color::BLUE."\"".self::CODENAME."\" ".Color::GREEN.$this->language->transrateString("on.enable"));
   }
 
   /****************************************************************************/
   /* Private functions */
 
   private function loadFiles(){
-    $this->dir  = $this->getDataFolder();
-    $this->conf = "config.yml";
-    $this->data = "data.db";
+    $this->dir = $this->getDataFolder();
     //
     if(!file_exists($this->dir)){
       mkdir($this->dir);
     }
-    if(!file_exists($this->dir.$this->conf)){
-      file_put_contents($this->dir.$this->conf, $this->getResource($this->conf));
+    if(!file_exists($this->dir.self::FILE_CONFIG)){
+      file_put_contents($this->dir.self::FILE_CONFIG, $this->getResource(self::FILE_CONFIG));
     }
-    try {
-      if(!file_exists($this->dir . $this->data)){
-        $this->db = new \SQLite3($this->dir . $this->data, SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);
-      }else{
-        $this->db = new \SQLite3($this->dir . $this->data, SQLITE3_OPEN_READWRITE);
-      }
-      $this->db->query("CREATE TABLE IF NOT EXISTS crftps (
-        ID INT PRIMARY KEY,
-        World TEXT,
-        XVec REAL,
-        YVec REAL,
-        ZVec REAL,
-        Title TEXT,
-        Text TEXT
-      )");
-      $this->db->query("CREATE TABLE IF NOT EXISTS ftps (
-        ID INT PRIMARY KEY,
-        World TEXT,
-        XVec REAL,
-        YVec REAL,
-        ZVec REAL,
-        Title TEXT,
-        Text TEXT,
-        Owner TEXT
-      )");
-    } catch (Exception $e) {
-      $this->getLogger()->error($e->getMessage());
+    if(!file_exists($this->dir.self::FILE_CRFTP)){
+      file_put_contents($this->dir.self::FILE_CRFTP, $this->getResource(self::FILE_CRFTP));
     }
-    $this->config = new Config($this->dir.$this->conf, Config::YAML);
-    $this->language = $this->config->get("language");
-    $this->getLogger()->info("");// TODO: language sut
+    if(!file_exists($this->dir.self::FILE_FTP)){
+      file_put_contents($this->dir.self::FILE_FTP, $this->getResource(self::FILE_FTP));
+    }
+    // config.yml
+    $this->config = new Config($this->dir.self::FILE_CONFIG, Config::YAML);
+    // crftps.json
+    $this->crftps_file = new Config($this->dir.self::FILE_CRFTP, Config::JSON);
+    $this->crftps = $this->crftps_file->getAll();
+    // ftps.json
+    $this->ftps_file = new Config($this->dir.self::FILE_FTP, Config::JSON);
+    $this->ftps = $this->ftps_file->getAll();
+    // Lang
+    $lang = $this->config->get("language");
+    if ($lang !== false) {
+      $this->language = new Lang($this, $lang);
+      $this->getLogger()->info(TF::GREEN.$this->language->transrateString("lang.registered", ["{lang}"], [$lang]));
+    }else {
+      $this->getLogger()->error("Invalid language settings. If you have any questions, please contact the issue.");
+    }
+    // CheckConfigVersion
     if (!$this->config->exists("configVersion") ||
         $this->config->get("configVersion") < self::CONFIG_VERSION) {
-      $this->getLogger()->notice("");// TODO: Too newer or invalid
+      $this->getLogger()->notice($this->language->transrateString("config.update", ["{newer}"], [self::CONFIG_VERSION]));
     }
   }
 
   private function initApi(){
     $this->api = new TexterApi($this);
+  }
+
+  private function checkPath(){
+    $path = strtolower($this->config->get("path"));
+    switch ($path) {
+      case 'new':
+        $this->apk = new network\mcpe\protocol\AddPlayerPacket();
+        $this->rpk = new network\mcpe\protocol\RemoveEntityPacket();
+      break;
+
+      default:
+        $this->apk = new network\protocol\AddPlayerPacket();
+        $this->rpk = new network\protocol\RemoveEntityPacket();
+      break;
+    }
+  }
+
+  private function registerCommands(){
+    if ((bool)$this->config->get("canUseCommands")) {
+      $map = $this->getServer()->getCommandMap();
+      $commands = [
+        new TxtCommand($this),
+        new TxtAdmCommand($this)
+      ];
+      $map->registerAll(self::NAME, $commands);
+      $this->getLogger()->info($this->language->transrateString("commands.registered"));
+    }else {
+      $this->getLogger()->info($this->language->transrateString("commands.unavailable"));
+    }
+  }
+
+  private function checkUpdate(){
+    if ((bool)$this->config->get("checkUpdate")) {
+      try {
+        $async = new CheckUpdateTask();
+        $this->getServer()->getScheduler()->scheduleAsyncTask($async);
+      } catch (\Exception $e) {
+        $this->getLogger()->warning($e->getMessage());
+      }
+    }
+    if (strpos(self::VERSION, "-") !== false) {
+      $this->getLogger()->notice($this->language->transrateString("version.pre"));
+      $this->devmode = true;
+    }
+  }
+
+  public function versionCompare(array $data){
+    $curver = str_replace("v", "", self::VERSION);
+    $newver = str_replace("v", "", $data[0]["name"]);
+    if ($this->getDescription()->getVersion() !== $this->curver) {
+      $this->getLogger()->warning($this->messages->get("version.warning"));
+    }
+    if (version_compare($newver, $curver, "=")) {
+      $this->getLogger()->notice($this->language->transrateString("update.unnecessary", ["{curver}"], [$curver]));
+    }elseif (version_compare($newver, $this->curver, ">")){
+      $this->getLogger()->notice($this->language->transrateString("update.available.1", ["{newver}", "{curver}"], [$newver, $curver]));
+      $this->getLogger()->notice($this->language->transrateString("update.available.2"));
+      $this->getLogger()->notice($this->language->transrateString("update.available.3", ["{url}"], [$data[0]["html_url"]]));
+    }
   }
 }

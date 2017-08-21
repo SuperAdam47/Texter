@@ -1,0 +1,52 @@
+{
+  "on.enable": "is Enabled.",
+  "on.disable": "is Disabled.",
+  "lang.registered": "Language was set to {lang}.",
+  "config.update": "config.yml version {newer} => Please delete config.yml once.",
+
+  "commands.registered": "Command was set to enabled.",
+  "commands.unavailable": "Command was set to disabled.",
+
+  "version.pre": "This version is under development. Operation may be unstable.",
+  "version.warning": "Detected version change, you may not be able to receive support.",
+
+  "update.unnecessary": "Newest version: v{curver} / No update required.",
+  "update.available.1": "Newest version: v{newver} / Current version: v{curver}",
+  "update.available.2": "Update is available.",
+  "update.available.3": "URL: {url}",
+
+  "timezone": "Timezone was set to {zone}.",
+
+  "world.not.exists": "The listed world ({world}) does not exist.",
+
+  "command.description.txt": "Operate floating texts.",
+  "command.description.txtadm": "Manage floating texts.",
+
+  "command.txt.usage.line1": "Usage:",
+  "command.txt.usage.add": "/txt a(dd) <title> [message]",
+  "command.txt.usage.remove": "/txt r(emove) <ID>",
+  "command.txt.usage.update": "/txt u(pdate) <title | text> <ID> <message>",
+  "command.txt.usage.indent": "When breaking a line, insert §6#§b",
+
+  "command.txt.set": "Placed floating text.",
+  "command.txt.remove": "Removed floating text.",
+  "command.txt.updated": "Updated floating text.",
+  "command.txt.exists": "There is another person's floating text at this position",
+  "command.txt.permission.remove": "You don`t have permission to erase the specified floating text.",
+  "command.txt.permission.update": "You don`t have permission to update the specified floating text.",
+
+  "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
+  "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <userName>",
+  "command.txtadm.usage.exts": "/txtadm ext(ension)s",
+  "command.txtadm.usage.info": "/txtadm info",
+
+  "command.txtadm.allremove": "{count} floating texts were deleted.",
+  "command.txtadm.userremove": "All floating texts of {user} have been deleted.",
+  "command.txtadm.extensions": "{exts} extension files are loaded.",
+  "command.txtadm.notexists": "Any floating texts doesn`t exists.",
+
+  "command.console": "Please use from within game.",
+
+  "txt.doesn`t.exists": "The specified ID floating text does not exist.",
+  "txt.user.doesn`t.exists": "The float text of the specified user does not exist."
+}

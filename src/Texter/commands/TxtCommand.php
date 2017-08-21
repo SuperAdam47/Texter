@@ -27,7 +27,7 @@ class TxtCommand extends Command{
     $this->setPermission("texter.command.txt");
   }
 
-  public function execute(CommandSender $s, $cmd, array $args){
+  public function execute(CommandSender $s, string $cmd, array $args){
     if (!$this->main->isEnabled()) return false;
     if (!$this->testPermission($s)) return false;
     if ($s instanceof Player) {
