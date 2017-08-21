@@ -80,6 +80,8 @@ class Main extends PluginBase {
   const VERSION = "v2.2.0-b3";
   const CODENAME = "Papilio dehaanii(カラスアゲハ)";
 
+  const CONFIG_VERSION = 10;
+
   /** @var bool $devmode */
   public $devmode = false;
   /** @var TexterApi $api */
@@ -124,15 +126,40 @@ class Main extends PluginBase {
     if(!file_exists($this->dir.$this->conf)){
       file_put_contents($this->dir.$this->conf, $this->getResource($this->conf));
     }
-    if(!file_exists($this->dir.$this->data)){
-      file_put_contents($this->dir.$this->data, []);
+    try {
+      if(!file_exists($this->dir . $this->data)){
+        $this->db = new \SQLite3($this->dir . $this->data, SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);
+      }else{
+        $this->db = new \SQLite3($this->dir . $this->data, SQLITE3_OPEN_READWRITE);
+      }
+      $this->db->query("CREATE TABLE IF NOT EXISTS crftps (
+        ID INT PRIMARY KEY,
+        World TEXT,
+        XVec REAL,
+        YVec REAL,
+        ZVec REAL,
+        Title TEXT,
+        Text TEXT
+      )");
+      $this->db->query("CREATE TABLE IF NOT EXISTS ftps (
+        ID INT PRIMARY KEY,
+        World TEXT,
+        XVec REAL,
+        YVec REAL,
+        ZVec REAL,
+        Title TEXT,
+        Text TEXT,
+        Owner TEXT
+      )");
+    } catch (Exception $e) {
+      $this->getLogger()->error($e->getMessage());
     }
     $this->config = new Config($this->dir.$this->conf, Config::YAML);
     $this->language = $this->config->get("language");
-    $this->getLogger()->info();// TODO: language sut
+    $this->getLogger()->info("");// TODO: language sut
     if (!$this->config->exists("configVersion") ||
-        $this->config->get("configVersion") < $newer) {
-      $this->getLogger()->notice();// TODO: Too newer or invalid
+        $this->config->get("configVersion") < self::CONFIG_VERSION) {
+      $this->getLogger()->notice("");// TODO: Too newer or invalid
     }
   }
 
