@@ -65,13 +65,15 @@ use pocketmine\network;
 use pocketmine\utils\TextFormat as TF;
 
 # etc
-use Texter\TexterApi;
 use Texter\commands\TxtCommand;
 use Texter\commands\TxtAdmCommand;
+use Texter\language\Lang;
+use Texter\particle\CantRemoveFloatingTextPerticle;
+use Texter\particle\FloatingTextPerticle;
 use Texter\task\WorldGetTask;
 use Texter\task\CheckUpdateTask;
-use Texter\language\Lang;
 use Texter\utils\TunedConfig as Config;
+use Texter\TexterApi;
 
 define("DS", DIRECTORY_SEPARATOR);
 
@@ -103,8 +105,28 @@ class Main extends PluginBase {
   /****************************************************************************/
   /* Public functions */
 
+  /**
+   * TexterApiを取得します
+   * @return TexterApi $this->api
+   */
   public function getApi(): TexterApi{
     return $this->api;
+  }
+
+  /**
+   * 追加用パケットを取得します
+   * @return AddPlayerPacket $this->apk
+   */
+  public function getAddPacket(): AddPlayerPacket{
+    return clone $this->apk;
+  }
+
+  /**
+   * 削除用パケットを取得します
+   * @return RemoveEntityPacket $this->rpk
+   */
+  public function getRemovePacket(): RemoveEntityPacket{
+    return clone $this->rpk;
   }
 
   /****************************************************************************/
@@ -115,12 +137,12 @@ class Main extends PluginBase {
     $this->initApi();
     $this->checkPath();
     $this->registerCommands();
-    //$this->checkUpdate();
-    //$this->setTimezone();
+    $this->checkUpdate();
+    $this->setTimezone();
   }
 
   public function onEnable(){
-    //$this->preparePacket();
+    $this->preparePacket();
     //$this->getServer()->getPluginManager()->registerEvents($this,$this);
     $this->getLogger()->info(TF::GREEN.self::NAME." ".self::VERSION." - ".TF::BLUE."\"".self::CODENAME."\" ".TF::GREEN.$this->language->transrateString("on.enable"));
   }
@@ -217,15 +239,62 @@ class Main extends PluginBase {
   public function versionCompare(array $data){
     $curver = str_replace("v", "", self::VERSION);
     $newver = str_replace("v", "", $data[0]["name"]);
-    if ($this->getDescription()->getVersion() !== $this->curver) {
+    if ($this->getDescription()->getVersion() !== $curver) {
       $this->getLogger()->warning($this->messages->get("version.warning"));
     }
     if (version_compare($newver, $curver, "=")) {
       $this->getLogger()->notice($this->language->transrateString("update.unnecessary", ["{curver}"], [$curver]));
-    }elseif (version_compare($newver, $this->curver, ">")){
+    }elseif (version_compare($newver, $curver, ">")){
       $this->getLogger()->notice($this->language->transrateString("update.available.1", ["{newver}", "{curver}"], [$newver, $curver]));
       $this->getLogger()->notice($this->language->transrateString("update.available.2"));
       $this->getLogger()->notice($this->language->transrateString("update.available.3", ["{url}"], [$data[0]["html_url"]]));
+    }
+  }
+
+  private function setTimezone(){
+    $timezone = $this->config->get("timezone");
+    if ($timezone !== false) {
+      date_default_timezone_set($timezone);
+      $this->getLogger()->info(TF::GREEN.$this->language->transrateString("timezone", ["{zone}"], [$timezone]));
+    }
+  }
+
+  private function preparePacket(){
+    if (!empty($this->crftps)) {
+      foreach ($this->crftps as $value) {
+        $title = str_replace("#", "\n", $value["TITLE"]);
+        $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
+        if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
+          $value["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
+        }
+        //
+        if ($this->getServer()->loadLevel($value["WORLD"])) {
+          $level = $this->getServer()->getLevelByName($value["WORLD"]);
+          $pos = new Vector3($value["Xvec"], $value["Yvec"], $value["Zvec"]);
+          $crftp = new CantRemoveFloatingTextPerticle($level, $pos, $title, $text);
+          $this->api->registerCrftp($crftp);
+        }else {
+          $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
+        }
+      }
+    }
+    if (!empty($this->ftps)) {
+      foreach ($this->ftps as $value) {
+        $title = str_replace("#", "\n", $value["TITLE"]);
+        $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
+        if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
+          $value["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
+        }
+        //
+        if ($this->getServer()->loadLevel($value["WORLD"])) {
+          $level = $this->getServer()->getLevelByName($value["WORLD"]);
+          $pos = new Vector3($value["Xvec"], $value["Yvec"], $value["Zvec"]);
+          $ftp = new FloatingTextPerticle($level, $pos, $title, $text);
+          $this->api->registerFtp($ftp);
+        }else {
+          $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
+        }
+      }
     }
   }
 }

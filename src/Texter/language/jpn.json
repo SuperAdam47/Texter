@@ -37,12 +37,10 @@
 
   "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
   "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <ユーザー名>",
-  "command.txtadm.usage.exts": "/txtadm ext(ension)s",
   "command.txtadm.usage.info": "/txtadm info",
 
   "command.txtadm.allremove": "{count} 個の浮き文字を削除しました。",
   "command.txtadm.userremove": "{user} の浮き文字をすべて削除しました。",
-  "command.txtadm.extensions": "{exts} 個の拡張ファイルが読み込まれています。",
   "command.txtadm.notexists": "浮き文字が一つもありません。",
 
   "command.console": "ゲーム内から使用してください。",

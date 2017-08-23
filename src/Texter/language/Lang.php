@@ -34,14 +34,27 @@ class Lang {
     $this->setLang($lang);
   }
 
+  /**
+   * 静的にインスタンス取得
+   * @return Lang
+   */
   public static function getInstance(): Lang{
     return self::$instance;
   }
 
+  /**
+   * 現在使用中の言語を取得
+   * @return string $this->language
+   */
   public function getLang(): string{
     return $this->language;
   }
 
+  /**
+   * 使用する言語を取得
+   * @param  string $lang
+   * @return string $this->language
+   */
   public function setLang(string $lang): string{
     switch (strtolower($lang)) {
       case self::ENG:
@@ -60,6 +73,13 @@ class Lang {
     return $this->language;
   }
 
+  /**
+   * 翻訳
+   * @param  string $key
+   * @param  array  $search  = []
+   * @param  array  $replace = []
+   * @return string
+   */
   public function transrateString(string $key, array $search = [], array $replace = []): string{
     $result = $this->lang->get($key);
     if ($result !== false) {

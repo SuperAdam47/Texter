@@ -42,7 +42,6 @@
 
   "command.txtadm.allremove": "{count} floating texts were deleted.",
   "command.txtadm.userremove": "All floating texts of {user} have been deleted.",
-  "command.txtadm.extensions": "{exts} extension files are loaded.",
   "command.txtadm.notexists": "Any floating texts doesn`t exists.",
 
   "command.console": "Please use from within game.",

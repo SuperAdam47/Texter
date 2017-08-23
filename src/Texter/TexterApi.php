@@ -71,4 +71,20 @@ class TexterAPI{
   public static function getInstance(): TexterApi{
     return self::$instance;
   }
+
+  /**
+   * 追加用パケットを取得します
+   * @return AddPlayerPacket
+   */
+  public function getAddPacket(): AddPlayerPacket{
+    return $this->main->getAddPacket();
+  }
+
+  /**
+   * 削除用パケットを取得します
+   * @return RemoveEntityPacket
+   */
+  public function getRemovePacket(): RemoveEntityPacket{
+    return $this->main->getRemovePacket();
+  }
 }
