@@ -1,27 +1,33 @@
 <?php
-namespace Texter\particle;
+namespace Texter\text;
 
+use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\entity\Entity;
-use pocketmine\level\Level;
-use pocketmine\level\Position;
+use pocketmine\level\{Level, Position};
 use pocketmine\math\Vector3;
 use pocketmine\item\Item;
 use pocketmine\utils\UUID;
 
 /**
- * CantRemoveFloatingTextPerticle
+ * FloatingText
  */
-class CantRemoveFloatingTextPerticle{
+class FloatingText{
 
+  /** @link $this->send() */
+  const SEND_TYPE_ADD = 0;
+  const SEND_TYPE_REMOVE = 1;
+
+  /** @var Level $level */
+  public $level = null;
   /** @var Vector3 $pos */
   public $pos = null;
   /** @var string $title */
   public $title = "";
   /** @var string $text */
   public $text = "";
-  /** @var string $level */
-  public $level = "";
+  /** @var string $onwer */
+  public $owner = "";
   /** @var bool $invisible */
   public $invisible = true;
   /** @var AddPlayerPacket $apk */
@@ -170,14 +176,84 @@ class CantRemoveFloatingTextPerticle{
     return true;
   }
 
+  /**
+   * AddPlayerPacketとして取得します
+   * @return AddPlayerPacket $pk
+   */
   public function getAsAddPacket(): AddPlayerPacket{
     $pk = TexterApi::getInstance()->getAddPacket();
     $pk->uuid = UUID::fromRandom();
-    $pk->username = "crftp";
+    $pk->username = "ftp";
+    $pk->eid = $this->eid;// for old packetObject
     $pk->entityUniqueId = $this->eid;
+    $pk->entityRuntimeId = $this->eid;// ...huh?
+    $pk->item = Item::get(Item::AIR);
+    $pk->x = (float)sprintf('%0.1f', $pos->x);
+    $pk->y = (float)sprintf('%0.1f', $pos->y);
+    $pk->z = (float)sprintf('%0.1f', $pos->z);
+    $flags = 0;
+    $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
+    $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
+    $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
+    $pk->metadata = [
+      Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
+      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
+      Entity::DATA_SCALE => [Entity::DATA_TYPE_FLOAT, 0]
+    ];
+    return $pk;
   }
 
+  /**
+   * RemoveEntityPacketとして取得します
+   * @return RemoveEntityPacket $pk
+   */
   public function getAsRemovePacket(): RemoveEntityPacket{
-    $pk = TexterApi::getInstance()->getAddPacket();
+    $pk = TexterApi::getInstance()->getRemovePacket();
+    $pk->eid = $this->eid;// for old packetObject
+    $pk->entityUniqueId = $this->eid;
+    return $pk;
+  }
+
+  /**
+   * プレイヤーに送信します
+   * @param  Player $player
+   * @param  int    $type
+   * @return bool
+   */
+  public function send(Player $player, int $type): bool{
+    switch ($type) {
+      case self::SEND_TYPE_ADD:
+        $pk = $this->getAsAddPacket();
+        $player->dataPacket($pk);
+      break;
+
+      case self::SEND_TYPE_REMOVE:
+        $pk = $this->getAsRemovePacket();
+        $player->dataPacket($pk);
+      break;
+
+      default:
+        return false;
+      break;
+    }
+    return true;
+  }
+
+  /**
+   * 所有者を取得します
+   * @return string $this->owner
+   */
+  public function getOwner(): string{
+    return $this->owner;
+  }
+
+  /**
+   * 所有者を変更します
+   * @param  string $owner
+   * @return bool
+   */
+  public function setOwner(string $owner): bool{
+    $this->owner = $owner;
+    return true;
   }
 }

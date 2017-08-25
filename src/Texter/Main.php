@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * ## To English-speaking countries
  *
  * Texter, the display FloatingTextPerticle plugin for PocketMine-MP
@@ -25,55 +25,38 @@
 
 namespace Texter;
 
-# Base
-use pocketmine\plugin\PluginBase;
-use pocketmine\event\Listener;
-
-# Server
-use pocketmine\Server;
-
-# Level
-use pocketmine\level\Level;
-use pocketmine\level\Position;
-
-# Entity
-use pocketmine\entity\Entity;
-use pocketmine\entity\Item as ItemEntity;
-
-# Player
+# Pocketmine
 use pocketmine\Player;
-
-# Item
+use pocketmine\Server;
+use pocketmine\command\{
+  Command,
+  CommandSender};
+use pocketmine\entity\Entity;
+use pocketmine\event\{
+  Listener,
+  entity\EntityLevelChangeEvent,
+  player\PlayerJoinEvent};
 use pocketmine\item\Item;
-
-# Event
-use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\entity\EntityLevelChangeEvent;
-
-# Command
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
-use pocketmine\command\CommandExecutor;
-
-# Math
+use pocketmine\level\{
+  Level,
+  Position};
 use pocketmine\math\Vector3;
-
-# Network
-use pocketmine\network;
-
-# Utils
+use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat as TF;
 
-# etc
-use Texter\commands\TxtCommand;
-use Texter\commands\TxtAdmCommand;
-use Texter\language\Lang;
-use Texter\particle\CantRemoveFloatingTextPerticle;
-use Texter\particle\FloatingTextPerticle;
-use Texter\task\WorldGetTask;
-use Texter\task\CheckUpdateTask;
-use Texter\utils\TunedConfig as Config;
+# Texter
 use Texter\TexterApi;
+use Texter\commands\{
+  TxtCommand,
+  TxtAdmCommand};
+use Texter\language\Lang;
+use Texter\text\{
+  CantRemoveFloatingText,
+  FloatingText};
+use Texter\task\{
+  CheckUpdateTask,
+  WorldGetTask};
+use Texter\utils\TunedConfig as Config;
 
 define("DS", DIRECTORY_SEPARATOR);
 
@@ -170,9 +153,11 @@ class Main extends PluginBase {
     // crftps.json
     $this->crftps_file = new Config($this->dir.self::FILE_CRFTP, Config::JSON);
     $this->crftps = $this->crftps_file->getAll();
+    var_dump($this->crftps);
     // ftps.json
     $this->ftps_file = new Config($this->dir.self::FILE_FTP, Config::JSON);
     $this->ftps = $this->ftps_file->getAll();
+    var_dump($this->ftps);
     // Lang
     $lang = $this->config->get("language");
     if ($lang !== false) {
@@ -272,7 +257,6 @@ class Main extends PluginBase {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
           $pos = new Vector3($value["Xvec"], $value["Yvec"], $value["Zvec"]);
           $crftp = new CantRemoveFloatingTextPerticle($level, $pos, $title, $text);
-          $this->api->registerCrftp($crftp);
         }else {
           $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
         }
@@ -289,8 +273,8 @@ class Main extends PluginBase {
         if ($this->getServer()->loadLevel($value["WORLD"])) {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
           $pos = new Vector3($value["Xvec"], $value["Yvec"], $value["Zvec"]);
-          $ftp = new FloatingTextPerticle($level, $pos, $title, $text);
-          $this->api->registerFtp($ftp);
+          $ftp = new FloatingTextPerticle($level, $pos, $title, $text, $value["OWNER"]);
+          $this->api->registerParticle($ftp);
         }else {
           $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
         }
