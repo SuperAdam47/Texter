@@ -3,6 +3,8 @@
   "on.disable": "is Disabled.",
   "lang.registered": "Language was set to {lang}.",
   "config.update": "config.yml version {newer} => Please delete config.yml once.",
+  "transfer.crftp": "Successful file transfer from crftps.json to crfts.json.",
+  "transfer.ftp": "Successful file transfer from ftps.json to fts.json.",
 
   "commands.registered": "Command was set to enabled.",
   "commands.unavailable": "Command was set to disabled.",

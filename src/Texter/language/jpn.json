@@ -3,6 +3,8 @@
   "on.disable": "が無効化されました。",
   "lang.registered": "言語は{lang} に設定されました。",
   "config.update": "config.yml {newer} => 一度config.ymlを削除してください。",
+  "transfer.crftp": "crftps.json から crfts.json へのファイル移行に成功しました。",
+  "transfer.ftp": "ftps.json から fts.json へのファイル移行に成功しました。",
 
   "commands.registered": "コマンドは使用可能に設定されました。",
   "commands.unavailable": "コマンドは使用不能に設定されました。",

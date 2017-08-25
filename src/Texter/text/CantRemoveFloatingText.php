@@ -1,13 +1,19 @@
 <?php
 namespace Texter\text;
 
+# Pocketmine
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\entity\Entity;
-use pocketmine\level\{Level, Position};
+use pocketmine\level\{
+  Level,
+  Position};
 use pocketmine\math\Vector3;
 use pocketmine\item\Item;
 use pocketmine\utils\UUID;
+
+# Texter
+use Texter\TexterApi;
 
 /**
  * CantRemoveFloatingText
@@ -27,7 +33,7 @@ class CantRemoveFloatingText{
   /** @var string $text */
   public $text = "";
   /** @var bool $invisible */
-  public $invisible = true;
+  public $invisible = false;
   /** @var AddPlayerPacket $apk */
   private $apk = null;
   /** @var RemoveEntityPacket $rpk */
@@ -48,6 +54,8 @@ class CantRemoveFloatingText{
     $this->title = $title;
     $this->text = $text;
     $this->eid = Entity::$entityCount++;
+    $this->apk = $this->getAsAddPacket();
+    $this->rpk = $this->getAsRemovePacket();
   }
 
   /**
@@ -178,7 +186,7 @@ class CantRemoveFloatingText{
    * AddPlayerPacketとして取得します
    * @return AddPlayerPacket $pk
    */
-  public function getAsAddPacket(): AddPlayerPacket{
+  public function getAsAddPacket(){
     $pk = TexterApi::getInstance()->getAddPacket();
     $pk->uuid = UUID::fromRandom();
     $pk->username = "crftp";
@@ -186,16 +194,16 @@ class CantRemoveFloatingText{
     $pk->entityUniqueId = $this->eid;
     $pk->entityRuntimeId = $this->eid;// ...huh?
     $pk->item = Item::get(Item::AIR);
-    $pk->x = (float)sprintf('%0.1f', $pos->x);
-    $pk->y = (float)sprintf('%0.1f', $pos->y);
-    $pk->z = (float)sprintf('%0.1f', $pos->z);
+    $pk->x = (float)sprintf('%0.1f', $this->pos->x);
+    $pk->y = (float)sprintf('%0.1f', $this->pos->y);
+    $pk->z = (float)sprintf('%0.1f', $this->pos->z);
     $flags = 0;
     $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
     $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
     $flags |= 1 << Entity::DATA_FLAG_IMMOBILE;
     $pk->metadata = [
       Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title . ($text !== "" ? "\n" . $text : "")],
+      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $this->title . ($this->text !== "" ? "\n" . $this->text : "")],
       Entity::DATA_SCALE => [Entity::DATA_TYPE_FLOAT, 0]
     ];
     return $pk;
@@ -205,7 +213,7 @@ class CantRemoveFloatingText{
    * RemoveEntityPacketとして取得します
    * @return RemoveEntityPacket $pk
    */
-  public function getAsRemovePacket(): RemoveEntityPacket{
+  public function getAsRemovePacket(){
     $pk = TexterApi::getInstance()->getRemovePacket();
     $pk->eid = $this->eid;// for old packetObject
     $pk->entityUniqueId = $this->eid;

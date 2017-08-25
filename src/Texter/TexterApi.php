@@ -37,21 +37,17 @@ use Texter\Main;
 use Texter\language\Lang;
 use Texter\text\{
   CantRemoveFloatingText,
-  FloatingTextPerticle};
+  FloatingText};
 
 /**
  * TexterApi
  */
 class TexterAPI{
 
-  /** @link registerParticle() */
-  const PARTICLE_CRFTP = 0;
-  const PARTICLE_FTP = 1;
-
-  /** @var array $crftp[$levelName][] = $pk */
-  private $crftp = [];
-  /** @var array $ftp[$levelName][] = $pk */
-  private $ftp = [];
+  /** @var array $crfts[$levelName][] = $pk */
+  private $crfts = [];
+  /** @var array $ft[$levelName][] = $pk */
+  private $fts = [];
   /** @var TexterAPI */
   private static $instance = null;
 
@@ -80,114 +76,114 @@ class TexterAPI{
 
   /**
    * パーティクルをTexterに登録します
-   * @param  CRFTP|FTP $particle
+   * @param  CRFT|FT $text
    * @return bool
    */
-  public function registerParticle($particle){
-    if ($particle instanceof CantRemoveFloatingTextPerticle) {
-      $this->crftps[$particle->getLevel()->getName()][$particle->getEntityId()] = $particle;
-    }elseif ($particle instanceof FloatingTextPerticle) {
-      $this->ftps[$particle->getLevel()->getName()][$particle->getEntityId()] = $particle;
+  public function registerTexts($text){
+    if ($text instanceof CantRemoveFloatingText) {
+      $this->crfts[$text->getLevel()->getName()][$text->getEntityId()] = $text;
+    }elseif ($text instanceof FloatingText) {
+      $this->fts[$text->getLevel()->getName()][$text->getEntityId()] = $text;
     }else {
       $this->getLogger()->warning($this->language->transrateString(""));// TODO:
     }
   }
 
   /**
-   * すべてのcrftpを返します
-   * @return array $this->crftps
+   * すべてのcrftを返します
+   * @return array $this->crfts
    */
-  public function getCrftps(): array{
-    return $this->crftps;
+  public function getCrfts(): array{
+    return $this->crfts;
   }
 
   /**
-   * 指定されたワールドのすべてのcrftpを返します
+   * 指定されたワールドのすべてのcrftを返します
    * @param  Level      $level
    * @return bool|array
    */
-  public function getCrftpsByLevel(Level $level){
+  public function getCrftsByLevel(Level $level){
     $levelName = $level->getName();
-    if (!isset($this->crftps[$levelName])) {
+    if (!isset($this->crfts[$levelName])) {
       return false;
     }else {
-      return $this->crftps[$levelName];
+      return $this->crfts[$levelName];
     }
   }
 
   /**
-   * 指定されたワールドのすべてのcrftpを返します
+   * 指定されたワールドのすべてのcrftを返します
    * @param  string     $levelName
    * @return bool|array
    */
-  public function getCrftpsByLevelName(string $levelName){
-    if (!isset($this->crftps[$levelName])) {
+  public function getCrftsByLevelName(string $levelName){
+    if (!isset($this->crfts[$levelName])) {
       return false;
     }else {
-      return $this->crftps[$levelName];
+      return $this->crfts[$levelName];
     }
   }
 
   /**
-   * 指定されたワールド, eidのcrftpを取得します
+   * 指定されたワールド, eidのcrftを取得します
    * @param  string $levelName
    * @param  int    $entityId
    * @return booL|CantRemoveFloatingText
    */
-  public function getCrftp(string $levelName, int $entityId){
-    if (!isset($this->crftps[$levelName][$entityId])) {
+  public function getCrft(string $levelName, int $entityId){
+    if (!isset($this->crfts[$levelName][$entityId])) {
       return false;
     }else{
-      return $this->crftps[$levelName][$entityId];
+      return $this->crfts[$levelName][$entityId];
     }
   }
 
   /**
-   * すべてのftpを返します
-   * @return array $this->ftps
+   * すべてのftを返します
+   * @return array $this->fts
    */
-  public function getFtps(): array{
-    return $this->ftps;
+  public function getFts(): array{
+    return $this->fts;
   }
 
   /**
-   * 指定されたワールドのすべてのftpを返します
+   * 指定されたワールドのすべてのftを返します
    * @param  Level      $level
    * @return bool|array
    */
-  public function getFtpsByLevel(Level $level){
+  public function getFtsByLevel(Level $level){
     $levelName = $level->getName();
-    if (!isset($this->crftps[$levelName])) {
+    if (!isset($this->crfts[$levelName])) {
       return false;
     }else {
-      return $this->crftps[$levelName];
+      return $this->crfts[$levelName];
     }
   }
 
   /**
-   * 指定されたワールドのすべてのftpを返します
+   * 指定されたワールドのすべてのftを返します
    * @param  string     $levelName
    * @return bool|array
    */
-  public function getFtpsByLevelName(string $levelName){
-    if (!isset($this->crftps[$levelName])) {
+  public function getFtsByLevelName(string $levelName){
+    if (!isset($this->crfts[$levelName])) {
       return false;
     }else {
-      return $this->crftps[$levelName];
+      return $this->crfts[$levelName];
     }
   }
 
   /**
-   * 指定されたワールド,eidのftpを取得します
+   * 指定されたワールド,eidのftを取得します
    * @param  string $levelName
    * @param  int    $entityId
    * @return bool|FloatingText
    */
-  public function getFtp(string $levelName, int $entityId){
-    if (!isset($this->ftps[$levelName][$entityId])) {
+  public function getFt(string $levelName, int $entityId){
+    if (!isset($this->fts[$levelName][$entityId])) {
       return false;
     }else{
-      return $this->ftps[$levelName][$entityId];
+      return $this->fts[$levelName][$entityId];
     }
   }
 
@@ -195,7 +191,7 @@ class TexterAPI{
    * 有用な追加用パケットを取得します
    * @return AddPlayerPacket
    */
-  public function getAddPacket(): AddPlayerPacket{
+  public function getAddPacket(){
     return $this->main->getAddPacket();
   }
 
@@ -203,7 +199,7 @@ class TexterAPI{
    * 有用な削除用パケットを取得します
    * @return RemoveEntityPacket
    */
-  public function getRemovePacket(): RemoveEntityPacket{
+  public function getRemovePacket(){
     return $this->main->getRemovePacket();
   }
 }

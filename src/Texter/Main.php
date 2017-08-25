@@ -8,7 +8,7 @@
  *
  * Released under the "MIT license".
  * You should have received a copy of the MIT license
- * along with this program.  If not, see
+ * along with this program.  If not,
  * < http://opensource.org/licenses/mit-license.php >.
  *
  * ---------------------------------------------------------------------
@@ -67,8 +67,10 @@ class Main extends PluginBase {
   const CODENAME = "Papilio dehaanii(カラスアゲハ)";
 
   const FILE_CONFIG = "config.yml";
-  const FILE_CRFTP = "crftps.json";
-  const FILE_FTP = "ftps.json";
+  const FILE_CRFTP = "crftps.json";// for old format
+  const FILE_CRFT = "crfts.json";
+  const FILE_FTP = "ftps.json";// for old format
+  const FILE_FT = "fts.json";
 
   const CONFIG_VERSION = 10;
 
@@ -100,7 +102,7 @@ class Main extends PluginBase {
    * 追加用パケットを取得します
    * @return AddPlayerPacket $this->apk
    */
-  public function getAddPacket(): AddPlayerPacket{
+  public function getAddPacket(){
     return clone $this->apk;
   }
 
@@ -108,7 +110,7 @@ class Main extends PluginBase {
    * 削除用パケットを取得します
    * @return RemoveEntityPacket $this->rpk
    */
-  public function getRemovePacket(): RemoveEntityPacket{
+  public function getRemovePacket(){
     return clone $this->rpk;
   }
 
@@ -142,22 +144,8 @@ class Main extends PluginBase {
     if(!file_exists($this->dir.self::FILE_CONFIG)){
       file_put_contents($this->dir.self::FILE_CONFIG, $this->getResource(self::FILE_CONFIG));
     }
-    if(!file_exists($this->dir.self::FILE_CRFTP)){
-      file_put_contents($this->dir.self::FILE_CRFTP, $this->getResource(self::FILE_CRFTP));
-    }
-    if(!file_exists($this->dir.self::FILE_FTP)){
-      file_put_contents($this->dir.self::FILE_FTP, $this->getResource(self::FILE_FTP));
-    }
     // config.yml
     $this->config = new Config($this->dir.self::FILE_CONFIG, Config::YAML);
-    // crftps.json
-    $this->crftps_file = new Config($this->dir.self::FILE_CRFTP, Config::JSON);
-    $this->crftps = $this->crftps_file->getAll();
-    var_dump($this->crftps);
-    // ftps.json
-    $this->ftps_file = new Config($this->dir.self::FILE_FTP, Config::JSON);
-    $this->ftps = $this->ftps_file->getAll();
-    var_dump($this->ftps);
     // Lang
     $lang = $this->config->get("language");
     if ($lang !== false) {
@@ -166,6 +154,40 @@ class Main extends PluginBase {
     }else {
       $this->getLogger()->error("Invalid language settings. If you have any questions, please contact the issue.");
     }
+    if(!file_exists($this->dir.self::FILE_CRFT)){
+      if (!file_exists($this->dir.self::FILE_CRFTP)) {
+        file_put_contents($this->dir.self::FILE_CRFT, $this->getResource(self::FILE_CRFT));
+      }else {
+        $tmpOld = new Config($this->dir.self::FILE_CRFTP, Config::JSON);
+        $tmpOldData = $tmpOld->getAll();
+        file_put_contents($this->dir.self::FILE_CRFT, []);
+        $tmpNew = new Config($this->dir.self::FILE_CRFT, Config::JSON);
+        $tmpNew->setAll($tmpOldData);
+        $tmpNew->save();
+        unlink($this->dir.self::FILE_CRFTP);
+        $this->getLogger()->info(TF::GREEN.$this->language->transrateString("transfer.crftp"));
+      }
+    }
+    if(!file_exists($this->dir.self::FILE_FT)){
+      if (!file_exists($this->dir.self::FILE_FTP)) {
+        file_put_contents($this->dir.self::FILE_FT, $this->getResource(self::FILE_FT));
+      }else {
+        $tmpOld = new Config($this->dir.self::FILE_FTP, Config::JSON);
+        $tmpOldData = $tmpOld->getAll();
+        file_put_contents($this->dir.self::FILE_FT, []);
+        $tmpNew = new Config($this->dir.self::FILE_FT, Config::JSON);
+        $tmpNew->setAll($tmpOldData);
+        $tmpNew->save();
+        unlink($this->dir.self::FILE_FTP);
+        $this->getLogger()->info(TF::GREEN.$this->language->transrateString("transfer.ftp"));
+      }
+    }
+    // crfts.json
+    $this->crfts_file = new Config($this->dir.self::FILE_CRFT, Config::JSON);
+    $this->crfts = $this->crfts_file->getAll();
+    // fts.json
+    $this->fts_file = new Config($this->dir.self::FILE_FT, Config::JSON);
+    $this->fts = $this->fts_file->getAll();
     // CheckConfigVersion
     if (!$this->config->exists("configVersion") ||
         $this->config->get("configVersion") < self::CONFIG_VERSION) {
@@ -181,13 +203,13 @@ class Main extends PluginBase {
     $path = strtolower($this->config->get("path"));
     switch ($path) {
       case 'new':
-        $this->apk = new network\mcpe\protocol\AddPlayerPacket();
-        $this->rpk = new network\mcpe\protocol\RemoveEntityPacket();
+        $this->apk = new \pocketmine\network\mcpe\protocol\AddPlayerPacket();
+        $this->rpk = new \pocketmine\network\mcpe\protocol\RemoveEntityPacket();
       break;
 
       default:
-        $this->apk = new network\protocol\AddPlayerPacket();
-        $this->rpk = new network\protocol\RemoveEntityPacket();
+        $this->apk = new \pocketmine\network\protocol\AddPlayerPacket();
+        $this->rpk = new \pocketmine\network\protocol\RemoveEntityPacket();
       break;
     }
   }
@@ -245,8 +267,8 @@ class Main extends PluginBase {
   }
 
   private function preparePacket(){
-    if (!empty($this->crftps)) {
-      foreach ($this->crftps as $value) {
+    if (!empty($this->crfts)) {
+      foreach ($this->crfts as $value) {
         $title = str_replace("#", "\n", $value["TITLE"]);
         $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
         if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
@@ -256,14 +278,15 @@ class Main extends PluginBase {
         if ($this->getServer()->loadLevel($value["WORLD"])) {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
           $pos = new Vector3($value["Xvec"], $value["Yvec"], $value["Zvec"]);
-          $crftp = new CantRemoveFloatingTextPerticle($level, $pos, $title, $text);
+          $crft = new CantRemoveFloatingText($level, $pos, $title, $text);
+          $this->api->registerTexts($crft);
         }else {
           $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
         }
       }
     }
-    if (!empty($this->ftps)) {
-      foreach ($this->ftps as $value) {
+    if (!empty($this->fts)) {
+      foreach ($this->fts as $value) {
         $title = str_replace("#", "\n", $value["TITLE"]);
         $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
         if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
@@ -273,8 +296,8 @@ class Main extends PluginBase {
         if ($this->getServer()->loadLevel($value["WORLD"])) {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
           $pos = new Vector3($value["Xvec"], $value["Yvec"], $value["Zvec"]);
-          $ftp = new FloatingTextPerticle($level, $pos, $title, $text, $value["OWNER"]);
-          $this->api->registerParticle($ftp);
+          $ft = new FloatingText($level, $pos, $title, $text, $value["OWNER"]);
+          $this->api->registerTexts($ft);
         }else {
           $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
         }
