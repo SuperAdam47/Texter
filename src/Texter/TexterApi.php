@@ -29,6 +29,9 @@ namespace Texter;
 use pocketmine\Player;
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
+use pocketmine\level\{
+  Level,
+  Position};
 use pocketmine\math\Vector3;
 use pocketmine\utils\UUID;
 

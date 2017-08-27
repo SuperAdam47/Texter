@@ -2,10 +2,15 @@
 
 namespace Texter\task;
 
-use Texter\Main;
-
+# Pocketmine
 use pocketmine\Player;
 use pocketmine\scheduler\PluginTask;
+
+# Texter
+use Texter\Main;
+use Texter\text\{
+  CantRemoveFloatingText as CRFT,
+  FloatingText as FT};
 
 /**
  * 1秒遅らせて移動後のワールドを取得するタスク
@@ -14,32 +19,24 @@ class WorldGetTask extends PluginTask{
 
   public function __construct(Main $main, Player $p){
     parent::__construct($main);
-    $this->api = $main->getAPI();
+    $this->api = $main->getApi();
     $this->p = $p;
   }
 
-  public function onRun($tick){
+  public function onRun(int $tick){
     $p = $this->p;
     $lev = $p->getLevel();
-    $levn = $lev->getName();
     //
-    $crftps = ($this->api->getCrftps()) ? $this->api->getCrftps() : false;
-    if (isset($crftps[$levn])) {
-      foreach ($crftps[$levn] as $pk) {
-        $p->dataPacket($pk);
+    $crfts = $this->api->getCrftsByLevel($lev);
+    if ($crfts !== false) {
+      foreach ($crfts as $crft) {
+        $crft->send($p, CRFT::SEND_TYPE_ADD);
       }
     }
-    $ftps = ($this->api->getFtps()) ? $this->api->getFtps() : false;
-    if (isset($ftps[$levn])) {
-      $n = strtolower($p->getName());
-      foreach ($ftps[$levn] as $pk) {
-        if ($n === $pk->owner or $p->isOp()) {
-          $pks = clone $pk;
-          $pks->metadata[4][1] = "[$pks->entityUniqueId] ".$pks->metadata[4][1];
-          $p->dataPacket($pks);
-        }else {
-          $p->dataPacket($pk);
-        }
+    $fts = $this->api->getFtsByLevel($lev);
+    if ($fts !== false) {
+      foreach ($fts as $ft) {
+        $ft->send($p, FT::SEND_TYPE_ADD);
       }
     }
   }

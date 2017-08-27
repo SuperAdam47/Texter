@@ -36,10 +36,6 @@ class FloatingText{
   public $owner = "";
   /** @var bool $invisible */
   public $invisible = false;
-  /** @var AddPlayerPacket $apk */
-  private $apk = null;
-  /** @var RemoveEntityPacket $rpk */
-  private $rpk = null;
   /** @var int $eid */
   private $eid = 0;
 
@@ -56,8 +52,6 @@ class FloatingText{
     $this->title = $title;
     $this->text = $text;
     $this->eid = Entity::$entityCount++;
-    $this->apk = $this->getAsAddPacket();
-    $this->rpk = $this->getAsRemovePacket();
   }
 
   /**
@@ -232,6 +226,9 @@ class FloatingText{
     switch ($type) {
       case self::SEND_TYPE_ADD:
         $pk = $this->getAsAddPacket();
+        if ($player->isOp()) {
+          $pk->metadata[4][1] = "[" . $this->eid . "]" . $pk->metadata[4][1];
+        }
         $player->dataPacket($pk);
       break;
 

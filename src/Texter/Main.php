@@ -45,6 +45,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat as TF;
 
 # Texter
+use Texter\EventListener;
 use Texter\TexterApi;
 use Texter\commands\{
   TxtCommand,
@@ -63,7 +64,7 @@ define("DS", DIRECTORY_SEPARATOR);
 class Main extends PluginBase {
 
   const NAME = "Texter";
-  const VERSION = "v2.2.0-b3";
+  const VERSION = "v2.2.0-b4";
   const CODENAME = "Papilio dehaanii(カラスアゲハ)";
 
   const FILE_CONFIG = "config.yml";
@@ -78,10 +79,16 @@ class Main extends PluginBase {
   public $devmode = false;
   /** @var string $dir */
   public $dir = "";
+  /** @var Config $config */
+  private $config = null;
   /** @var TexterApi $api */
   private $api = null;
   /** @var Lang $language */
   private $language = null;
+  /** @var array $crfts */
+  private $crfts = [];
+  /** @var array $fts */
+  private $fts = [];
   /** @var AddPlayerPacket $apk */
   private $apk = null;
   /** @var RemoveEntityPacket $rpk */
@@ -128,7 +135,8 @@ class Main extends PluginBase {
 
   public function onEnable(){
     $this->preparePacket();
-    //$this->getServer()->getPluginManager()->registerEvents($this,$this);
+    $listener = new EventListener($this);
+    $this->getServer()->getPluginManager()->registerEvents($listener, $this);
     $this->getLogger()->info(TF::GREEN.self::NAME." ".self::VERSION." - ".TF::BLUE."\"".self::CODENAME."\" ".TF::GREEN.$this->language->transrateString("on.enable"));
   }
 
@@ -183,11 +191,11 @@ class Main extends PluginBase {
       }
     }
     // crfts.json
-    $this->crfts_file = new Config($this->dir.self::FILE_CRFT, Config::JSON);
-    $this->crfts = $this->crfts_file->getAll();
+    $crfts_file = new Config($this->dir.self::FILE_CRFT, Config::JSON);
+    $this->crfts = $crfts_file->getAll();
     // fts.json
-    $this->fts_file = new Config($this->dir.self::FILE_FT, Config::JSON);
-    $this->fts = $this->fts_file->getAll();
+    $fts_file = new Config($this->dir.self::FILE_FT, Config::JSON);
+    $this->fts = $fts_file->getAll();
     // CheckConfigVersion
     if (!$this->config->exists("configVersion") ||
         $this->config->get("configVersion") < self::CONFIG_VERSION) {

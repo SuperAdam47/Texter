@@ -34,10 +34,6 @@ class CantRemoveFloatingText{
   public $text = "";
   /** @var bool $invisible */
   public $invisible = false;
-  /** @var AddPlayerPacket $apk */
-  private $apk = null;
-  /** @var RemoveEntityPacket $rpk */
-  private $rpk = null;
   /** @var int $eid */
   private $eid = 0;
 
@@ -54,8 +50,6 @@ class CantRemoveFloatingText{
     $this->title = $title;
     $this->text = $text;
     $this->eid = Entity::$entityCount++;
-    $this->apk = $this->getAsAddPacket();
-    $this->rpk = $this->getAsRemovePacket();
   }
 
   /**
