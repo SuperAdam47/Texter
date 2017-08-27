@@ -121,6 +121,10 @@ class Main extends PluginBase {
     return clone $this->rpk;
   }
 
+  public function getCharaLimit(): int{
+    return (int)$this->config->get("limit");
+  }
+
   /****************************************************************************/
   /* PMMP Api */
 

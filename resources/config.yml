@@ -1,4 +1,4 @@
-configVersion: 10
+configVersion: 20
 
 # 日本語 ガイド
 # eng guide
@@ -30,3 +30,7 @@ canUseCommands: true
 # pocketmine\newwork\mcpe\protocol\...なら"new"と記載し、
 # そうでなければ"old"と記載して下さい。
 path: new
+
+# 文字数の制限をする場合は文字数を, 不要なら -1 にしてください
+# To limit the number of characters, set the number of characters, if unnecessary, set it to -1.
+limit: 50

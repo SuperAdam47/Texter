@@ -10,7 +10,9 @@ use pocketmine\level\{
   Position};
 use pocketmine\math\Vector3;
 use pocketmine\item\Item;
-use pocketmine\utils\UUID;
+use pocketmine\utils\{
+  TextFormat as TF,
+  UUID};
 
 # Texter
 use Texter\TexterApi;
@@ -226,8 +228,8 @@ class FloatingText{
     switch ($type) {
       case self::SEND_TYPE_ADD:
         $pk = $this->getAsAddPacket();
-        if ($player->isOp()) {
-          $pk->metadata[4][1] = "[" . $this->eid . "]" . $pk->metadata[4][1];
+        if ($player->isOp() || $player->getName() === $this->owner) {
+          $pk->metadata[4][1] = TF::GRAY . "[" . $this->eid . "] " . TF::WHITE . $pk->metadata[4][1];
         }
         $player->dataPacket($pk);
       break;
