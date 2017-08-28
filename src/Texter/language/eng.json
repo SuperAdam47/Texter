@@ -39,7 +39,6 @@
 
   "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
   "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <userName>",
-  "command.txtadm.usage.exts": "/txtadm ext(ension)s",
   "command.txtadm.usage.info": "/txtadm info",
 
   "command.txtadm.allremove": "{count} floating texts were deleted.",

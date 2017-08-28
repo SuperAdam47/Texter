@@ -73,7 +73,7 @@ class Main extends PluginBase {
   const FILE_FTP = "ftps.json";// for old format
   const FILE_FT = "fts.json";
 
-  const CONFIG_VERSION = 10;
+  const CONFIG_VERSION = 20;
 
   /** @var bool $devmode */
   public $devmode = false;

@@ -50,7 +50,6 @@ class EventListener implements Listener{
     $p = $e->getEntity();
     if ($p instanceof Player) {
       $lev = $p->getLevel();
-      var_dump($lev->getName());
       $crfts = $this->api->getCrftsByLevel($lev);
       if ($crfts !== false) {
         foreach ($crfts as $crft) {
