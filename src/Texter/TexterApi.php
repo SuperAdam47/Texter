@@ -66,7 +66,9 @@ class TexterAPI{
     $this->main = $main;
     $this->language = Lang::getInstance();
     $this->crft_config = new Config($main->getDataFolder().Main::FILE_CRFT, Config::JSON);
+    $this->crft_config->setAll([]);
     $this->ft_config = new Config($main->getDataFolder().Main::FILE_FT, Config::JSON);
+    $this->ft_config->setAll([]);
   }
 
   /****************************************************************************/
@@ -114,6 +116,7 @@ class TexterAPI{
       "TEXT"  => $text->text
     ];
     $this->crft_config->set($key, $data);
+    $this->crft_config->save();
     return true;
   }
 
@@ -151,6 +154,7 @@ class TexterAPI{
       "OWNER" => $player
     ];
     $this->ft_config->set($key, $data);
+    $this->ft_config->save();
     return true;
   }
 
