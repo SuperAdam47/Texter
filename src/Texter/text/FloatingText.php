@@ -24,8 +24,8 @@ use Texter\language\Lang;
  */
 class FloatingText extends Text{
 
-  /** @var string $owner */
-  public $owner = "";
+  /** @var Player $owner */
+  public $owner = null;
 
   /**
    * コンストラクタ
@@ -34,9 +34,8 @@ class FloatingText extends Text{
    * @param int|float $x = 0
    * @param int|float $y = 0
    * @param int|float $z = 0
-   * @param Vector3   $pos
    * @param string    $title = ""
-   * @param string    $text = ""
+   * @param string    $text  = ""
    * @param string    $owner = ""
    */
   public function __construct(Level $level, $x = 0, $y = 0, $z = 0, string $title = "", string $text = "", string $owner = ""){
@@ -45,12 +44,165 @@ class FloatingText extends Text{
     $this->y = $y;
     $this->z = $z;
     $this->title = $title;
-    $this->text = $text;
+    $this->text  = $text;
     $this->owner = $owner;
     $this->eid = Entity::$entityCount++;
     $this->api = TexterApi::getInstance();
-    $this->api->registerText($this);
-    $this->update(self::SEND_TYPE_ADD);
+    $this->api->saveFt($this, $owner, true);
+    $this->sendToLevel(self::SEND_TYPE_ADD);
+  }
+
+  /**
+   * X座標を変更します
+   * @Override
+   * @param  int|float $x
+   * @return bool
+   */
+  public function setX($x): bool{
+    if (is_numeric($x)) {
+      $tmpX = $this->x;
+      $this->x = $x;
+      if ($this->api->saveFt($this)) {
+        $this->sendToLevel(self::SEND_TYPE_ADD);
+        return true;
+      }else {
+        $this->x = $tmpX;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Y座標を変更します
+   * @Override
+   * @param  int|float $y
+   * @return bool
+   */
+  public function setY($y): bool{
+    if (is_numeric($y)) {
+      $tmpY = $this->y;
+      $this->y = $y;
+      if ($this->api->saveFt($this)) {
+        $this->sendToLevel(self::SEND_TYPE_ADD);
+        return true;
+      }else {
+        $this->y = $tmpY;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Z座標を変更します
+   * @Override
+   * @param  int|float $z
+   * @return bool
+   */
+  public function setZ($z): bool{
+    if (is_numeric($z)) {
+      $tmpZ = $this->z;
+      $this->z = $z;
+      if ($this->api->saveFt($this)) {
+        $this->sendToLevel(self::SEND_TYPE_ADD);
+        return true;
+      }else {
+        $this->z = $tmpZ;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Levelを変更します
+   * @Override
+   * @param  Level $level
+   * @return bool
+   */
+  public function setLevel(Level $level): bool{
+    $this->sendToLevel(self::SEND_TYPE_REMOVE);
+    $tmpLev = $this->level;
+    $this->level = $level;
+    if ($this->api->saveFt($this)) {
+      $this->sendToLevel(self::SEND_TYPE_ADD);
+      return true;
+    }else {
+      $this->level = $tmpLev;
+      $this->sendToLevel(self::SEND_TYPE_ADD);
+      return false;
+    }
+  }
+
+  /**
+   * Levelを変更します
+   * @Override
+   * @param  string $levelName
+   * @return bool
+   */
+  public function setLevelByName(string $levelName): bool{
+    $level = Server::getInstance()->getLevelByName($levelName);
+    if ($level !== null) {
+      $this->sendToLevel(self::SEND_TYPE_REMOVE);
+      $tmpLev = $this->level;
+      $this->level = $level;
+      if ($this->api->saveFt($this)) {
+        $this->sendToLevel(self::SEND_TYPE_ADD);
+        return true;
+      }else {
+        $this->level = $tmpLev;
+        $this->sendToLevel(self::SEND_TYPE_ADD);
+      }
+    }
+    return false;
+  }
+
+  /**
+  * 座標を変更します
+  * @Override
+  * @param  Vector3 $pos
+  * @return bool    true
+  */
+  public function setCoord(Vector3 $pos): bool{
+    $tmpX = $this->x;
+    $tmpY = $this->y;
+    $tmpZ = $this->z;
+    $this->x = $pos->x;
+    $this->y = $pos->y;
+    $this->z = $pos->z;
+    if ($this->api->saveFt($this)) {
+      $this->sendToLevel(self::SEND_TYPE_ADD);
+      return true;
+    }else {
+      $this->x = $tmpX;
+      $this->y = $tmpY;
+      $this->z = $tmpZ;
+      return false;
+    }
+  }
+
+  /**
+   * タイトルを変更します, # で改行です.
+   * @Override
+   * @param  string $title
+   * @return bool   true
+   */
+  public function setTitle(string $title): bool{
+    $this->title = str_replace("#", "\n", $title);
+    $this->api->saveFt($this);
+    $this->sendToLevel(self::SEND_TYPE_ADD);
+    return true;
+  }
+
+  /**
+   * テキストを変更します, # で改行です
+   * @Override
+   * @param  string $text
+   * @return bool   true
+   */
+  public function setText(string $text): bool{
+    $this->text = str_replace("#", "\n", $text);
+    $this->api->saveFt($this);
+    $this->sendToLevel(self::SEND_TYPE_ADD);
+    return true;
   }
 
   /**
@@ -60,7 +212,7 @@ class FloatingText extends Text{
    * @param  int    $type
    * @return bool
    */
-  public function send(Player $player, int $type): bool{
+  public function sendToPlayer(Player $player, int $type): bool{
     switch ($type) {
       case self::SEND_TYPE_ADD:
         $pk = $this->getAsAddPacket();
@@ -88,7 +240,7 @@ class FloatingText extends Text{
    * @param  int  $type
    * @return bool true
    */
-  public function update(int $type): bool{
+  public function sendToLevel(int $type): bool{
     switch ($type) {
       case self::SEND_TYPE_ADD:
         $pk = $this->getAsAddPacket();
@@ -128,14 +280,25 @@ class FloatingText extends Text{
   /**
    * 所有者を変更します
    * @param  string $owner
-   * @return bool
+   * @return bool   true
    */
   public function setOwner(string $owner): bool{
     $this->owner = $owner;
-    if ($this->api->saveText($this)) {
-      $this->update();
-      return true;
-    }
+    $this->api->saveFt($this, $owner, true);
+    $this->sendToLevel(self::SEND_TYPE_ADD);
     return true;
+  }
+
+  /**
+   * テキストを操作できるか確認します
+   * @param  Player $player
+   * @return bool
+   */
+  public function canEditFt(Player $player): bool{
+    if ($player->isOp() || $this->owner === $player->getName()) {
+      return true;
+    }else {
+      return false;
+    }
   }
 }

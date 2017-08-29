@@ -30,13 +30,13 @@ class WorldGetTask extends PluginTask{
     $crfts = $this->api->getCrftsByLevel($lev);
     if ($crfts !== false) {
       foreach ($crfts as $crft) {
-        $crft->send($p, CRFT::SEND_TYPE_ADD);
+        $crft->sendToPlayer($p, CRFT::SEND_TYPE_ADD);
       }
     }
     $fts = $this->api->getFtsByLevel($lev);
     if ($fts !== false) {
       foreach ($fts as $ft) {
-        $ft->send($p, FT::SEND_TYPE_ADD);
+        $ft->sendToPlayer($p, FT::SEND_TYPE_ADD);
       }
     }
   }

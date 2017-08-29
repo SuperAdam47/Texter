@@ -81,6 +81,10 @@ class Main extends PluginBase {
   public $dir = "";
   /** @var Config $config */
   private $config = null;
+  /** @var Config $crft_config */
+  private $crft_config = null;
+  /** @var Config $ft_config */
+  private $ft_config = null;
   /** @var TexterApi $api */
   private $api = null;
   /** @var Lang $language */
@@ -195,13 +199,11 @@ class Main extends PluginBase {
       }
     }
     // crfts.json
-    $crfts_file = new Config($this->dir.self::FILE_CRFT, Config::JSON);
-    $this->crfts = $crfts_file->getAll();
-    $crfts_file->setAll([]);
-    $crfts_file->save();
+    $this->crft_config = new Config($this->dir.self::FILE_CRFT, Config::JSON);
+    $this->crfts = $this->crft_config->getAll();
     // fts.json
-    $fts_file = new Config($this->dir.self::FILE_FT, Config::JSON);
-    $this->fts = $fts_file->getAll();
+    $this->ft_config = new Config($this->dir.self::FILE_FT, Config::JSON);
+    $this->fts = $this->ft_config->getAll();
     // CheckConfigVersion
     if (!$this->config->exists("configVersion") ||
         $this->config->get("configVersion") < self::CONFIG_VERSION) {
@@ -282,7 +284,9 @@ class Main extends PluginBase {
 
   private function prepareTexts(){
     if (!empty($this->crfts)) {
-      foreach ($this->crfts as $value) {
+      $this->crft_config->setAll([]);
+      $this->crft_config->save();
+      foreach ($this->crfts as $k => $value) {
         $title = isset($value["TITLE"]) ? str_replace("#", "\n", $value["TITLE"]) : "";
         $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
         if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
@@ -292,13 +296,18 @@ class Main extends PluginBase {
         if ($this->getServer()->loadLevel($value["WORLD"])) {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
           $crft = new CRFT($level, $value["Xvec"], $value["Yvec"], $value["Zvec"], $title, $text);
+          $key = $value["WORLD"].$value["Zvec"].$value["Xvec"].$value["Yvec"];
+          $this->crft_config->set($key, $this->crfts[$k]);
+          $this->crft_config->save();
         }else {
           $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
         }
       }
     }
     if (!empty($this->fts)) {
-      foreach ($this->fts as $value) {
+      $this->ft_config->setAll([]);
+      $this->ft_config->save();
+      foreach ($this->fts as $k => $value) {
         $title = isset($value["TITLE"]) ? str_replace("#", "\n", $value["TITLE"]) : "";
         $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
         if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
@@ -308,6 +317,9 @@ class Main extends PluginBase {
         if ($this->getServer()->loadLevel($value["WORLD"])) {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
           $ft = new FT($level, $value["Xvec"], $value["Yvec"], $value["Zvec"], $title, $text, $value["OWNER"]);
+          $key = $value["WORLD"].$value["Zvec"].$value["Xvec"].$value["Yvec"];
+          $this->ft_config->set($key, $this->fts[$k]);
+          $this->ft_config->save();
         }else {
           $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
         }

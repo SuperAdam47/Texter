@@ -67,7 +67,7 @@ abstract class Text{
     $this->text = $text;
     $this->eid = Entity::$entityCount++;
     $this->api = TexterApi::getInstance();
-    $this->api->registerText($this);
+    $this->api->saveCrft($this, true);
     $this->sendToLevel(self::SEND_TYPE_ADD);
   }
 
@@ -88,7 +88,7 @@ abstract class Text{
     if (is_numeric($x)) {
       $tmpX = $this->x;
       $this->x = $x;
-      if ($this->api->saveText($this)) {
+      if ($this->api->saveCrft($this)) {
         $this->sendToLevel(self::SEND_TYPE_ADD);
         return true;
       }else {
@@ -115,7 +115,7 @@ abstract class Text{
     if (is_numeric($y)) {
       $tmpY = $this->y;
       $this->y = $y;
-      if ($this->api->saveText($this)) {
+      if ($this->api->saveCrft($this)) {
         $this->sendToLevel(self::SEND_TYPE_ADD);
         return true;
       }else {
@@ -142,7 +142,7 @@ abstract class Text{
     if (is_numeric($z)) {
       $tmpZ = $this->z;
       $this->z = $z;
-      if ($this->api->saveText($this)) {
+      if ($this->api->saveCrft($this)) {
         $this->sendToLevel(self::SEND_TYPE_ADD);
         return true;
       }else {
@@ -169,7 +169,7 @@ abstract class Text{
     $this->sendToLevel(self::SEND_TYPE_REMOVE);
     $tmpLev = $this->level;
     $this->level = $level;
-    if ($this->api->saveText($this)) {
+    if ($this->api->saveCrft($this)) {
       $this->sendToLevel(self::SEND_TYPE_ADD);
       return true;
     }else {
@@ -190,7 +190,7 @@ abstract class Text{
       $this->sendToLevel(self::SEND_TYPE_REMOVE);
       $tmpLev = $this->level;
       $this->level = $level;
-      if ($this->api->saveText($this)) {
+      if ($this->api->saveCrft($this)) {
         $this->sendToLevel(self::SEND_TYPE_ADD);
         return true;
       }else {
@@ -229,7 +229,7 @@ abstract class Text{
     $this->x = $pos->x;
     $this->y = $pos->y;
     $this->z = $pos->z;
-    if ($this->api->saveText($this)) {
+    if ($this->api->saveCrft($this)) {
       $this->sendToLevel(self::SEND_TYPE_ADD);
       return true;
     }else {
@@ -255,7 +255,7 @@ abstract class Text{
    */
   public function setTitle(string $title): bool{
     $this->title = str_replace("#", "\n", $title);
-    $this->api->saveText($this, true);
+    $this->api->saveCrft($this);
     $this->sendToLevel(self::SEND_TYPE_ADD);
     return true;
   }
@@ -269,13 +269,13 @@ abstract class Text{
   }
 
   /**
-   * テキストを変更します, # で改行です.
+   * テキストを変更します, # で改行です
    * @param  string $text
    * @return bool   true
    */
   public function setText(string $text): bool{
     $this->text = str_replace("#", "\n", $text);
-    $this->api->saveText($this, true);
+    $this->api->saveCrft($this, true);
     $this->sendToLevel(self::SEND_TYPE_ADD);
     return true;
   }
@@ -421,18 +421,5 @@ abstract class Text{
    */
   public function remove(){
     $this->sendToLevel(self::SEND_TYPE_REMOVE);
-  }
-
-  /**
-   * テキストを操作できるか確認します
-   * @param  Player $player
-   * @return bool
-   */
-  public function canEditFt(Player $player): bool{
-    if ($player->isOp() || $this->owner === $player->getName()) {
-      return true;
-    }else {
-      return false;
-    }
   }
 }

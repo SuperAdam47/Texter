@@ -33,7 +33,9 @@ use pocketmine\level\{
   Level,
   Position};
 use pocketmine\math\Vector3;
-use pocketmine\utils\UUID;
+use pocketmine\utils\{
+  TextFormat as TF,
+  UUID};
 
 # Texter
 use Texter\Main;
@@ -86,109 +88,84 @@ class TexterAPI{
   }
 
   /**
-   * テキストをTexterに登録します
-   * @param  CRFT|FT $text
+   * テキストをファイルに保存します
+   * @param  CRFT $text
+   * @param  bool $new  新規かどうか
    * @return bool
    */
-  public function registerText($text): bool{
-    if ($text instanceof CRFT) {
-      $levelName = $text->level->getName();
-      $this->crfts[$levelName][$text->eid] = $text;
-      $key = $levelName . $text->z . $text->x . $text->y;
-      if ($this->crft_config->exists($key) && !$update) {
+  public function saveCrft(CRFT $text, bool $new = false): bool{
+    $levelName = $text->level->getName();
+    $key = $levelName . $text->z . $text->x . $text->y;
+    if ($new) { // 新規
+      if ($this->crft_config->exists($key)) { // 既設
         $message = $this->language->transrateString("txt.exists");
-        $this->main->getServer()->getLogger()->warning($message);
+        $this->main->getLogger()->warning($message);
         return false;
+      }else {
+        $this->crfts[$levelName][$text->eid] = $text;
       }
-      $data = [
-        "WORLD" => $levelName,
-        "Xvec"  => $text->x,
-        "Yvec"  => $text->y,
-        "Zvec"  => $text->z,
-        "TITLE" => $text->title,
-        "TEXT"  => $text->text
-      ];
-      $this->crft_config->set($key, $data);
-      $this->crft_config->save();
-      return true;
-    }elseif ($text instanceof FT) {
-      $this->fts[$text->level->getName()][$text->eid] = $text;
-      return true;
-    }else {
-      $this->getLogger()->warning($this->language->transrateString("txt.type.invalid"));
-      return false;
     }
+    $data = [
+      "WORLD" => $levelName,
+      "Xvec"  => sprintf('%0.1f', $text->x),
+      "Yvec"  => sprintf('%0.1f', $text->y),
+      "Zvec"  => sprintf('%0.1f', $text->z),
+      "TITLE" => $text->title,
+      "TEXT"  => $text->text
+    ];
+    $this->crft_config->set($key, $data);
+    return true;
   }
 
   /**
    * テキストをファイルに保存します
-   * @param  CRFT|FT $text
-   * @param  bool    $update  アップデート用
+   * @param  FT     $text
+   * @param  string $player
+   * @param  bool   $new  新規かどうか
    * @return bool
    */
-  public function saveText($text, bool $update = false): bool{
-    if ($text instanceof CRFT) {
-      $levelName = $text->level->getName();
-      $key = $levelName . $text->z . $text->x . $text->y;
-      if ($this->crft_config->exists($key) && !$update) {
+  public function saveFt(FT $text, string $player = "", bool $new = false): bool{
+    $levelName = $text->level->getName();
+    $key = $levelName . $text->z . $text->x . $text->y;
+    if ($new) { // 新規
+      if ($this->ft_config->exists($key)) { // 既設
         $message = $this->language->transrateString("txt.exists");
-        $this->main->getServer()->getLogger()->warning($message);
+        $pl = $this->main->getServer()->getPlayer($owner);
+        if ($pl !== null) {
+          $pl->sendMessage(TF::RED . Lang::PREFIX . $message);
+        }else {
+          $this->main->getLogger()->warning($message);
+        }
         return false;
+      }else {
+        $this->fts[$levelName][$text->eid] = $text;
       }
-      $data = [
-        "WORLD" => $levelName,
-        "Xvec"  => $text->x,
-        "Yvec"  => $text->y,
-        "Zvec"  => $text->z,
-        "TITLE" => $text->title,
-        "TEXT"  => $text->text
-      ];
-      $this->crft_config->set($key, $data);
-      $this->crft_config->save();
-      return true;
-    }elseif ($text instanceof FT) {
-      $levelName = $text->level->getName();
-      $key = $levelName . $text->z . $text->x . $text->y;
-      if ($this->ft_config->exists($key) && !$update) {
-        $message = $this->language->transrateString("txt.exists");
-        $this->main->getServer()->getLogger()->warning($message);
-        return false;
-      }
-      $data = [
-        "WORLD" => $levelName,
-        "Xvec"  => $text->x,
-        "Yvec"  => $text->y,
-        "Zvec"  => $text->z,
-        "TITLE" => $text->title,
-        "TEXT"  => $text->text,
-        "OWNER" => $text->owner
-      ];
-      $this->ft_config->set($key, $data);
-      $this->ft_config->save();
-      return true;
-    }else {
-      $this->getLogger()->warning($this->language->transrateString("txt.type.invalid"));
-      return false;
     }
+    $data = [
+      "WORLD" => $levelName,
+      "Xvec"  => sprintf('%0.1f', $text->x),
+      "Yvec"  => sprintf('%0.1f', $text->y),
+      "Zvec"  => sprintf('%0.1f', $text->z),
+      "TITLE" => $text->title,
+      "TEXT"  => $text->text,
+      "OWNER" => $player
+    ];
+    $this->ft_config->set($key, $data);
+    return true;
   }
 
   /**
    * テキストをファイルから消去します
-   * @param  FT $text
-   * @return bool
+   * @param  FT   $text
+   * @return bool true
    */
-  public function removeText($text): bool{
-    if ($text instanceof FT) {
-      $levelName = $text->level->getName();
-      $key = $levelName . $text->z . $text->x . $text->y;
-      $this->ft_config->remove($key);
-      $this->ft_config->save();
-      unset($this->fts[$levelName][$text->eid]);
-      return true;
-    }else {
-      $this->getLogger()->warning($this->language->transrateString("txt.type.invalid"));
-    }
-    return false;
+  public function removeText(FT $text): bool{
+    $levelName = $text->level->getName();
+    $key = $levelName . $text->z . $text->x . $text->y;
+    $this->ft_config->remove($key);
+    $this->ft_config->save();
+    unset($this->fts[$levelName][$text->eid]);
+    return true;
   }
 
   /**

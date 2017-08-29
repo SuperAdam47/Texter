@@ -13,9 +13,7 @@ use pocketmine\utils\TextFormat as TF;
 # Texter
 use Texter\Main;
 use Texter\language\Lang;
-use Texter\text\{
-  FloatingText as FT,
-  Text};
+use Texter\text\FloatingText as FT;
 
 /**
  * TxtCommand
@@ -67,7 +65,7 @@ class TxtCommand extends Command{
                 $x = sprintf('%0.1f', $sender->x);
                 $y = sprintf('%0.1f', $sender->y + 1);
                 $z = sprintf('%0.1f', $sender->z);
-                $ft = new FT($lev, $x, $y, $z, $title, $text, $name);
+                $ft = new FT($lev, $sender, $x, $y, $z, $title, $text);
                 $message = $this->lang->transrateString("command.txt.set");
                 $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
               }
@@ -111,7 +109,7 @@ class TxtCommand extends Command{
                 if ($ft->canEditFt($sender)) {
                   switch (strtolower($args[2])) {
                     case 'title':
-                      if (mb_strlen($args[3] . $ft->getText(), "UTF-8") > $lim) {
+                      if (mb_strlen($args[3] . $ft->text, "UTF-8") > $lim) {
                         $message = $this->lang->transrateString("command.txt.limit", ["{limit}"], [$lim]);
                         $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
                       }else {
