@@ -39,24 +39,32 @@ use pocketmine\utils\UUID;
 use Texter\Main;
 use Texter\language\Lang;
 use Texter\text\{
-  CantRemoveFloatingText,
-  FloatingText};
+  CantRemoveFloatingText as CRFT,
+  FloatingText as FT};
+use Texter\utils\TunedConfig as Config;
 
 /**
  * TexterApi
  */
 class TexterAPI{
 
+  /** @var TexterAPI */
+  private static $instance = null;
+  /** @var Config $crft_config */
+  private $crft_config = null;
+  /** @var Config $ft_config */
+  private $ft_config = null;
   /** @var array $crfts[$levelName][] = $pk */
   private $crfts = [];
   /** @var array $ft[$levelName][] = $pk */
   private $fts = [];
-  /** @var TexterAPI */
-  private static $instance = null;
 
   public function __construct(Main $main){
-    $this->main = $main;
     self::$instance = $this;
+    $this->main = $main;
+    $this->language = Lang::getInstance();
+    $this->crft_config = new Config($main->getDataFolder().Main::FILE_CRFT, Config::JSON);
+    $this->ft_config = new Config($main->getDataFolder().Main::FILE_FT, Config::JSON);
   }
 
   /****************************************************************************/
@@ -74,22 +82,113 @@ class TexterAPI{
    * @return string "eng"|"jpn"
    */
   public function getLanguage(): string{
-    return Lang::getInstance()->getLang();
+    return $this->language->getLang();
   }
 
   /**
-   * パーティクルをTexterに登録します
+   * テキストをTexterに登録します
    * @param  CRFT|FT $text
    * @return bool
    */
-  public function registerTexts($text){
-    if ($text instanceof CantRemoveFloatingText) {
-      $this->crfts[$text->getLevel()->getName()][$text->getEntityId()] = $text;
-    }elseif ($text instanceof FloatingText) {
-      $this->fts[$text->getLevel()->getName()][$text->getEntityId()] = $text;
+  public function registerText($text): bool{
+    if ($text instanceof CRFT) {
+      $levelName = $text->level->getName();
+      $this->crfts[$levelName][$text->eid] = $text;
+      $key = $levelName . $text->z . $text->x . $text->y;
+      if ($this->crft_config->exists($key) && !$update) {
+        $message = $this->language->transrateString("txt.exists");
+        $this->main->getServer()->getLogger()->warning($message);
+        return false;
+      }
+      $data = [
+        "WORLD" => $levelName,
+        "Xvec"  => $text->x,
+        "Yvec"  => $text->y,
+        "Zvec"  => $text->z,
+        "TITLE" => $text->title,
+        "TEXT"  => $text->text
+      ];
+      $this->crft_config->set($key, $data);
+      $this->crft_config->save();
+      return true;
+    }elseif ($text instanceof FT) {
+      $this->fts[$text->level->getName()][$text->eid] = $text;
+      return true;
     }else {
-      $this->getLogger()->warning($this->language->transrateString(""));// TODO:
+      $this->getLogger()->warning($this->language->transrateString("txt.type.invalid"));
+      return false;
     }
+  }
+
+  /**
+   * テキストをファイルに保存します
+   * @param  CRFT|FT $text
+   * @param  bool    $update  アップデート用
+   * @return bool
+   */
+  public function saveText($text, bool $update = false): bool{
+    if ($text instanceof CRFT) {
+      $levelName = $text->level->getName();
+      $key = $levelName . $text->z . $text->x . $text->y;
+      if ($this->crft_config->exists($key) && !$update) {
+        $message = $this->language->transrateString("txt.exists");
+        $this->main->getServer()->getLogger()->warning($message);
+        return false;
+      }
+      $data = [
+        "WORLD" => $levelName,
+        "Xvec"  => $text->x,
+        "Yvec"  => $text->y,
+        "Zvec"  => $text->z,
+        "TITLE" => $text->title,
+        "TEXT"  => $text->text
+      ];
+      $this->crft_config->set($key, $data);
+      $this->crft_config->save();
+      return true;
+    }elseif ($text instanceof FT) {
+      $levelName = $text->level->getName();
+      $key = $levelName . $text->z . $text->x . $text->y;
+      if ($this->ft_config->exists($key) && !$update) {
+        $message = $this->language->transrateString("txt.exists");
+        $this->main->getServer()->getLogger()->warning($message);
+        return false;
+      }
+      $data = [
+        "WORLD" => $levelName,
+        "Xvec"  => $text->x,
+        "Yvec"  => $text->y,
+        "Zvec"  => $text->z,
+        "TITLE" => $text->title,
+        "TEXT"  => $text->text,
+        "OWNER" => $text->owner
+      ];
+      $this->ft_config->set($key, $data);
+      $this->ft_config->save();
+      return true;
+    }else {
+      $this->getLogger()->warning($this->language->transrateString("txt.type.invalid"));
+      return false;
+    }
+  }
+
+  /**
+   * テキストをファイルから消去します
+   * @param  FT $text
+   * @return bool
+   */
+  public function removeText($text): bool{
+    if ($text instanceof FT) {
+      $levelName = $text->level->getName();
+      $key = $levelName . $text->z . $text->x . $text->y;
+      $this->ft_config->remove($key);
+      $this->ft_config->save();
+      unset($this->fts[$levelName][$text->eid]);
+      return true;
+    }else {
+      $this->getLogger()->warning($this->language->transrateString("txt.type.invalid"));
+    }
+    return false;
   }
 
   /**
@@ -131,7 +230,7 @@ class TexterAPI{
    * 指定されたワールド, eidのcrftを取得します
    * @param  string $levelName
    * @param  int    $entityId
-   * @return booL|CantRemoveFloatingText
+   * @return booL|CRFT
    */
   public function getCrft(string $levelName, int $entityId){
     if (!isset($this->crfts[$levelName][$entityId])) {
@@ -156,10 +255,10 @@ class TexterAPI{
    */
   public function getFtsByLevel(Level $level){
     $levelName = $level->getName();
-    if (!isset($this->crfts[$levelName])) {
+    if (!isset($this->fts[$levelName])) {
       return false;
     }else {
-      return $this->crfts[$levelName];
+      return $this->fts[$levelName];
     }
   }
 
@@ -169,10 +268,10 @@ class TexterAPI{
    * @return bool|array
    */
   public function getFtsByLevelName(string $levelName){
-    if (!isset($this->crfts[$levelName])) {
+    if (!isset($this->fts[$levelName])) {
       return false;
     }else {
-      return $this->crfts[$levelName];
+      return $this->fts[$levelName];
     }
   }
 
@@ -180,7 +279,7 @@ class TexterAPI{
    * 指定されたワールド,eidのftを取得します
    * @param  string $levelName
    * @param  int    $entityId
-   * @return bool|FloatingText
+   * @return bool|FT
    */
   public function getFt(string $levelName, int $entityId){
     if (!isset($this->fts[$levelName][$entityId])) {

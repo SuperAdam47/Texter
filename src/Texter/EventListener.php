@@ -33,12 +33,14 @@ class EventListener implements Listener{
     $p = $e->getPlayer();
     $lev = $p->getLevel();
     $crfts = $this->api->getCrftsByLevel($lev);
+    var_dump(count($crfts));
     if ($crfts !== false) {
       foreach ($crfts as $crft) {
         $crft->send($p, CRFT::SEND_TYPE_ADD);
       }
     }
     $fts = $this->api->getFtsByLevel($lev);
+    var_dump(count($fts));
     if ($fts !== false) {
       foreach ($fts as $ft) {
         $ft->send($p, FT::SEND_TYPE_ADD);

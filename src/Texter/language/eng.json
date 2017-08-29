@@ -20,22 +20,23 @@
   "timezone": "Timezone was set to {zone}.",
 
   "world.not.exists": "The listed world ({world}) does not exist.",
+  "txt.type.invalid": "The type of the specified text is invalid.",
 
   "command.description.txt": "Operate floating texts.",
   "command.description.txtadm": "Manage floating texts.",
 
-  "command.txt.usage.line1": "Usage:",
+  "command.txt.usage": "Usage:",
   "command.txt.usage.add": "/txt a(dd) <title> [message]",
   "command.txt.usage.remove": "/txt r(emove) <ID>",
-  "command.txt.usage.update": "/txt u(pdate) <title | text> <ID> <message>",
+  "command.txt.usage.update": "/txt u(pdate) <ID> <title | text> <message>",
   "command.txt.usage.indent": "When breaking a line, insert §6#§b",
 
   "command.txt.set": "Placed floating text.",
+  "command.txt.limit": "The number of characters is limited by {limit}.",
   "command.txt.remove": "Removed floating text.",
   "command.txt.updated": "Updated floating text.",
-  "command.txt.exists": "There is another person's floating text at this position",
-  "command.txt.permission.remove": "You don`t have permission to erase the specified floating text.",
-  "command.txt.permission.update": "You don`t have permission to update the specified floating text.",
+  "command.txt.permission": "You don`t have permission to edit the specified floating text.",
+  "command.txt.exists": "Floating text already exists at the specified coordinates.",
 
   "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
   "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <userName>",

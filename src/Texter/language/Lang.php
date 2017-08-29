@@ -16,6 +16,8 @@ class Lang {
   const JPN = "jpn";
   const ENG = "eng";
 
+  const PREFIX = "[Texter] ";
+
   /** @var string $dir */
   public $dir = "";
   /** @var Main $main */

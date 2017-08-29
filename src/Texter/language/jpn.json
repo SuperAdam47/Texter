@@ -20,22 +20,22 @@
   "timezone": "タイムゾーンは {zone} に設定されました。",
 
   "world.not.exists": "記載されたワールド名 {world} は存在しません。",
+  "txt.type.invalid": "指定されたテキストの型は無効です。",
 
   "command.description.txt": "浮き文字を操作します。",
   "command.description.txtadm": "浮き文字の管理をします。",
 
-  "command.txt.usage.line1": "使用方法:",
+  "command.txt.usage": "使用方法:",
   "command.txt.usage.add": "/txt a(dd) <タイトル> <メッセージ>",
   "command.txt.usage.remove": "/txt r(emove) <ID>",
-  "command.txt.usage.update": "/txt u(pdate) <title | text> <ID> <テキスト>",
+  "command.txt.usage.update": "/txt u(pdate) <ID> <title | text> <テキスト>",
   "command.txt.usage.indent": "改行したい場合は§6#§bを挿入",
 
   "command.txt.set": "浮き文字を設置しました。",
+  "command.txt.limit": "{limit} までに文字数が制限されています。",
   "command.txt.remove": "浮き文字を削除しました。",
   "command.txt.updated": "浮き文字を更新しました。",
-  "command.txt.exists": "この位置には別の人の浮き文字が存在します。",
-  "command.txt.permission.remove": "この浮き文字を消す権限がありません。",
-  "command.txt.permission.update": "指定された浮き文字を更新する権限がありません。",
+  "command.txt.permission": "指定された浮き文字を扱う権限がありません。",
 
   "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
   "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <ユーザー名>",
@@ -47,6 +47,7 @@
 
   "command.console": "ゲーム内から使用してください。",
 
+  "txt.exists": "指定された座標に既に浮き文字が存在します。",
   "txt.doesn`t.exists": "指定されたIDの浮き文字が存在しません。",
   "txt.user.doesn`t.exists": "指定されたユーザーの浮き文字は存在しません。"
 }

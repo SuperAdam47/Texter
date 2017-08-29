@@ -52,8 +52,8 @@ use Texter\commands\{
   TxtAdmCommand};
 use Texter\language\Lang;
 use Texter\text\{
-  CantRemoveFloatingText,
-  FloatingText};
+  CantRemoveFloatingText as CRFT,
+  FloatingText as FT};
 use Texter\task\{
   CheckUpdateTask,
   WorldGetTask};
@@ -64,7 +64,7 @@ define("DS", DIRECTORY_SEPARATOR);
 class Main extends PluginBase {
 
   const NAME = "Texter";
-  const VERSION = "v2.2.0-b4";
+  const VERSION = "v2.2.0-b5";
   const CODENAME = "Papilio dehaanii(カラスアゲハ)";
 
   const FILE_CONFIG = "config.yml";
@@ -138,7 +138,7 @@ class Main extends PluginBase {
   }
 
   public function onEnable(){
-    $this->preparePacket();
+    $this->prepareTexts();
     $listener = new EventListener($this);
     $this->getServer()->getPluginManager()->registerEvents($listener, $this);
     $this->getLogger()->info(TF::GREEN.self::NAME." ".self::VERSION." - ".TF::BLUE."\"".self::CODENAME."\" ".TF::GREEN.$this->language->transrateString("on.enable"));
@@ -197,6 +197,8 @@ class Main extends PluginBase {
     // crfts.json
     $crfts_file = new Config($this->dir.self::FILE_CRFT, Config::JSON);
     $this->crfts = $crfts_file->getAll();
+    $crfts_file->setAll([]);
+    $crfts_file->save();
     // fts.json
     $fts_file = new Config($this->dir.self::FILE_FT, Config::JSON);
     $this->fts = $fts_file->getAll();
@@ -278,10 +280,10 @@ class Main extends PluginBase {
     }
   }
 
-  private function preparePacket(){
+  private function prepareTexts(){
     if (!empty($this->crfts)) {
       foreach ($this->crfts as $value) {
-        $title = str_replace("#", "\n", $value["TITLE"]);
+        $title = isset($value["TITLE"]) ? str_replace("#", "\n", $value["TITLE"]) : "";
         $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
         if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
           $value["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
@@ -289,9 +291,7 @@ class Main extends PluginBase {
         //
         if ($this->getServer()->loadLevel($value["WORLD"])) {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
-          $pos = new Vector3($value["Xvec"], $value["Yvec"], $value["Zvec"]);
-          $crft = new CantRemoveFloatingText($level, $pos, $title, $text);
-          $this->api->registerTexts($crft);
+          $crft = new CRFT($level, $value["Xvec"], $value["Yvec"], $value["Zvec"], $title, $text);
         }else {
           $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
         }
@@ -299,7 +299,7 @@ class Main extends PluginBase {
     }
     if (!empty($this->fts)) {
       foreach ($this->fts as $value) {
-        $title = str_replace("#", "\n", $value["TITLE"]);
+        $title = isset($value["TITLE"]) ? str_replace("#", "\n", $value["TITLE"]) : "";
         $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
         if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
           $value["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
@@ -307,9 +307,7 @@ class Main extends PluginBase {
         //
         if ($this->getServer()->loadLevel($value["WORLD"])) {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
-          $pos = new Vector3($value["Xvec"], $value["Yvec"], $value["Zvec"]);
-          $ft = new FloatingText($level, $pos, $title, $text, $value["OWNER"]);
-          $this->api->registerTexts($ft);
+          $ft = new FT($level, $value["Xvec"], $value["Yvec"], $value["Zvec"], $title, $text, $value["OWNER"]);
         }else {
           $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
         }
