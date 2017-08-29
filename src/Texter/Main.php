@@ -278,6 +278,7 @@ class Main extends PluginBase {
     }
   }
 
+  // TODO: コンストラクタでのエラー時例外処理(try-catch)
   private function prepareTexts(){
     if (!empty($this->crfts)) {
       foreach ($this->crfts as $value) {

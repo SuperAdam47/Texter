@@ -65,7 +65,7 @@ class TxtCommand extends Command{
                 $x = sprintf('%0.1f', $sender->x);
                 $y = sprintf('%0.1f', $sender->y + 1);
                 $z = sprintf('%0.1f', $sender->z);
-                $ft = new FT($lev, $sender, $x, $y, $z, $title, $text);
+                $ft = new FT($lev, $x, $y, $z, $title . TF::RESET . TF::WHITE, $text, $name);
                 $message = $this->lang->transrateString("command.txt.set");
                 $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
               }

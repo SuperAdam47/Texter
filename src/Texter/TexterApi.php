@@ -133,7 +133,7 @@ class TexterAPI{
     if ($new) { // 新規
       if ($this->ft_config->exists($key)) { // 既設
         $message = $this->language->transrateString("txt.exists");
-        $pl = $this->main->getServer()->getPlayer($owner);
+        $pl = $this->main->getServer()->getPlayer($player);
         if ($pl !== null) {
           $pl->sendMessage(TF::RED . Lang::PREFIX . $message);
         }else {
