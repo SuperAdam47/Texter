@@ -51,7 +51,7 @@ class FloatingText extends Text{
     if ($this->api->saveFt($this, $owner, true)) {
       $this->sendToLevel(self::SEND_TYPE_ADD);
     }else {
-      $this->api->removeText($this);
+      $this->failed = true;
     }
   }
 

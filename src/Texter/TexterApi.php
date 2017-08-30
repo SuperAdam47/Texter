@@ -100,8 +100,6 @@ class TexterAPI{
     $key = $levelName . $text->z . $text->x . $text->y;
     if ($new) { // 新規
       if ($this->crft_config->exists($key)) { // 既設
-        $message = $this->language->transrateString("txt.exists");
-        $this->main->getLogger()->warning($message);
         return false;
       }else {
         $this->crfts[$levelName][$text->eid] = $text;
@@ -132,13 +130,6 @@ class TexterAPI{
     $key = $levelName . $text->z . $text->x . $text->y;
     if ($new) { // 新規
       if ($this->ft_config->exists($key)) { // 既設
-        $message = $this->language->transrateString("txt.exists");
-        $pl = $this->main->getServer()->getPlayer($player);
-        if ($pl !== null) {
-          $pl->sendMessage(TF::RED . Lang::PREFIX . $message);
-        }else {
-          $this->main->getLogger()->warning($message);
-        }
         return false;
       }else {
         $this->fts[$levelName][$text->eid] = $text;

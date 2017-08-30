@@ -50,9 +50,9 @@ class TxtCommand extends Command{
         switch (strtolower($args[0])) { // subCommand
           case 'add':
           case 'a':
-            if (isset($args[1])) { // Title
+            if (!empty($args[1])) { // Title
               $title = str_replace("#", "\n", $args[1]);
-              if (isset($args[2])) {
+              if (!empty($args[2])) { // Text
                 $texts = array_slice($args, 2);
                 $text = str_replace("#", "\n", implode(" ", $texts));
               }else {
@@ -65,9 +65,14 @@ class TxtCommand extends Command{
                 $x = sprintf('%0.1f', $sender->x);
                 $y = sprintf('%0.1f', $sender->y + 1);
                 $z = sprintf('%0.1f', $sender->z);
-                $ft = new FT($lev, $x, $y, $z, $title . TF::RESET . TF::WHITE, $text, $name);
-                $message = $this->lang->transrateString("command.txt.set");
-                $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
+                $ft = new FT($lev, $x, $y, $z, $title, $text, $name);
+                if ($ft->failed) {
+                  $message = $this->lang->transrateString("txt.exists");
+                  $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+                }else {
+                  $message = $this->lang->transrateString("command.txt.set");
+                  $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
+                }
               }
             }else {
               $message = $this->lang->transrateString("command.txt.usage.add");
@@ -101,7 +106,7 @@ class TxtCommand extends Command{
 
           case 'update':
           case 'u':
-            if (isset($args[1]) && isset($args[2]) && isset($args[3])) {
+            if (isset($args[1]) && isset($args[2]) && !empty($args[3])) {
               // eid && title" or "text" && contents
               $eid = (int)$args[1];
               $ft = $this->api->getFt($levn, $eid);

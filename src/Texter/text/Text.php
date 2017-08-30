@@ -47,6 +47,8 @@ abstract class Text{
   public $invisible = false;
   /** @var int $eid */
   public $eid = 0;
+  /** @var bool $failed */
+  public $failed = false;
 
   /**
    * コンストラクタ
@@ -67,8 +69,11 @@ abstract class Text{
     $this->text = $text;
     $this->eid = Entity::$entityCount++;
     $this->api = TexterApi::getInstance();
-    $this->api->saveCrft($this, true);
-    $this->sendToLevel(self::SEND_TYPE_ADD);
+    if ($this->api->saveCrft($this, true)) {
+      $this->sendToLevel(self::SEND_TYPE_ADD);
+    }else {
+      $this->failed = true;
+    }
   }
 
   /**
@@ -343,7 +348,7 @@ abstract class Text{
     }
     $pk->metadata = [
       Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $this->title . ($this->text !== "" ? "\n" . $this->text : "")],
+      Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $this->title . TF::RESET . TF::WHITE . ($this->text !== "" ? "\n" . $this->text : "")],
       Entity::DATA_SCALE => [Entity::DATA_TYPE_FLOAT, 0]
     ];
     return $pk;
@@ -421,5 +426,23 @@ abstract class Text{
    */
   public function remove(){
     $this->sendToLevel(self::SEND_TYPE_REMOVE);
+  }
+
+  /**
+   * 処理に失敗したかを取得します
+   * @return bool
+   */
+  public function getFailed(): bool{
+    return $this->failed;
+  }
+
+  /**
+   * 処理に失敗したかどうかを変更します
+   * @param  bool $value
+   * @return bool true
+   */
+  public function setFailed(bool $value): bool{
+    $this->failed = $value;
+    return true;
   }
 }
