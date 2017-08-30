@@ -1,5 +1,4 @@
 <?php
-
 namespace Texter\commands;
 
 # Pocketmine
@@ -44,19 +43,23 @@ class TxtCommand extends Command{
     if ($sender instanceof Player) {
       if (isset($args[0])) {
         $name = $sender->getName();
-        $lev = $sender->getLevel();
+        $lev = $sender->level;
         $levn = $lev->getName();
         $lim = $this->main->getCharaLimit();
         switch (strtolower($args[0])) { // subCommand
           case 'add':
           case 'a':
             if (!empty($args[1])) { // Title
-              $title = str_replace("#", "\n", $args[1]);
+              $title = str_replace(["#", "§"], ["\n", ""], $args[1]);
               if (!empty($args[2])) { // Text
                 $texts = array_slice($args, 2);
-                $text = str_replace("#", "\n", implode(" ", $texts));
+                $text = str_replace(["#", "§"], ["\n", ""], implode(" ", $texts));
               }else {
                 $text = "";
+              }
+              if (!$sender->isOp()) {
+                $title = TF::clean($title);// HACK: "§a" "a" isn`t deleted
+                $text = TF::clean($text);
               }
               if (mb_strlen($title . $text, "UTF-8") > $lim) {
                 $message = $this->lang->transrateString("command.txt.limit", ["{limit}"], [$lim]);
@@ -85,7 +88,7 @@ class TxtCommand extends Command{
             if (isset($args[1])) { // entityId
               $eid = (int)$args[1];
               $ft = $this->api->getFt($levn, $eid);
-              if ($ft !== false) {
+              if ($ft !== null) {
                 if ($ft->canEditFt($sender)) {
                   $ft->remove();
                   $message = $this->lang->transrateString("command.txt.remove");
@@ -110,7 +113,7 @@ class TxtCommand extends Command{
               // eid && title" or "text" && contents
               $eid = (int)$args[1];
               $ft = $this->api->getFt($levn, $eid);
-              if ($ft !== false) {
+              if ($ft !== null) {
                 if ($ft->canEditFt($sender)) {
                   switch (strtolower($args[2])) {
                     case 'title':
@@ -160,7 +163,8 @@ class TxtCommand extends Command{
         $sender->sendMessage(TF::AQUA . Lang::PREFIX . $this->help);
       }
     }else {
-      $this->main->getLogger()->info("§c".$this->lang->transrateString("command.console"));
+      $message = $this->lang->transrateString("command.console");
+      $this->main->getLogger()->info(TF::RED . $message);
     }
     return true;
   }

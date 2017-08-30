@@ -33,13 +33,13 @@ class EventListener implements Listener{
     $p = $e->getPlayer();
     $lev = $p->getLevel();
     $crfts = $this->api->getCrftsByLevel($lev);
-    if ($crfts !== false) {
+    if (!empty($crfts)) {
       foreach ($crfts as $crft) {
         $crft->sendToPlayer($p, CRFT::SEND_TYPE_ADD);
       }
     }
     $fts = $this->api->getFtsByLevel($lev);
-    if ($fts !== false) {
+    if (!empty($fts)) {
       foreach ($fts as $ft) {
         $ft->sendToPlayer($p, FT::SEND_TYPE_ADD);
       }
@@ -51,13 +51,13 @@ class EventListener implements Listener{
     if ($p instanceof Player) {
       $lev = $p->getLevel();
       $crfts = $this->api->getCrftsByLevel($lev);
-      if ($crfts !== false) {
+      if (!empty($crfts)) {
         foreach ($crfts as $crft) {
           $crft->sendToPlayer($p, CRFT::SEND_TYPE_REMOVE);
         }
       }
       $fts = $this->api->getFtsByLevel($lev);
-      if ($fts !== false) {
+      if (!empty($fts)) {
         foreach ($fts as $ft) {
           $ft->sendToPlayer($p, FT::SEND_TYPE_REMOVE);
         }

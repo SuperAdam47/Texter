@@ -174,12 +174,12 @@ class TexterAPI{
   /**
    * 指定されたワールドのすべてのcrftを返します
    * @param  Level      $level
-   * @return bool|array
+   * @return array
    */
-  public function getCrftsByLevel(Level $level){
+  public function getCrftsByLevel(Level $level): array{
     $levelName = $level->getName();
     if (!isset($this->crfts[$levelName])) {
-      return false;
+      return [];
     }else {
       return $this->crfts[$levelName];
     }
@@ -188,11 +188,11 @@ class TexterAPI{
   /**
    * 指定されたワールドのすべてのcrftを返します
    * @param  string     $levelName
-   * @return bool|array
+   * @return array
    */
-  public function getCrftsByLevelName(string $levelName){
+  public function getCrftsByLevelName(string $levelName): array{
     if (!isset($this->crfts[$levelName])) {
-      return false;
+      return [];
     }else {
       return $this->crfts[$levelName];
     }
@@ -202,14 +202,31 @@ class TexterAPI{
    * 指定されたワールド, eidのcrftを取得します
    * @param  string $levelName
    * @param  int    $entityId
-   * @return booL|CRFT
+   * @return null|CRFT
    */
   public function getCrft(string $levelName, int $entityId){
     if (!isset($this->crfts[$levelName][$entityId])) {
-      return false;
+      return null;
     }else{
       return $this->crfts[$levelName][$entityId];
     }
+  }
+
+  /**
+   * crftの個数を返します
+   * @return int
+   */
+  public function getCrftsCount(): int{
+    $cc = 0;
+    $crfts = $this->getCrfts();
+    if ($crfts !== false) {
+      foreach ($crfts as $levCrfts) {
+        foreach ($levCrfts as $crft) {
+          ++$cc;
+        }
+      }
+    }
+    return $cc;
   }
 
   /**
@@ -223,12 +240,12 @@ class TexterAPI{
   /**
    * 指定されたワールドのすべてのftを返します
    * @param  Level      $level
-   * @return bool|array
+   * @return array
    */
-  public function getFtsByLevel(Level $level){
+  public function getFtsByLevel(Level $level): array{
     $levelName = $level->getName();
     if (!isset($this->fts[$levelName])) {
-      return false;
+      return [];
     }else {
       return $this->fts[$levelName];
     }
@@ -237,13 +254,36 @@ class TexterAPI{
   /**
    * 指定されたワールドのすべてのftを返します
    * @param  string     $levelName
-   * @return bool|array
+   * @return array
    */
-  public function getFtsByLevelName(string $levelName){
+  public function getFtsByLevelName(string $levelName): array{
     if (!isset($this->fts[$levelName])) {
-      return false;
+      return [];
     }else {
       return $this->fts[$levelName];
+    }
+  }
+
+  /**
+   * 指定されたユーザー名所有のftをすべて取得します
+   * @param  string $name
+   * @return array
+   */
+  public function getFtsByName(string $name): array{
+    $name = strtolower($name);
+    $fts = $this->getFts();
+    if (empty($fts)) {
+      return [];
+    }else {
+      $return = [];
+      foreach ($fts as $levFts) {
+        foreach ($levFts as $ft) {
+          if ($ft->owner === $name) {
+            $return[] = $ft;
+          }
+        }
+      }
+      return $return;
     }
   }
 
@@ -251,14 +291,31 @@ class TexterAPI{
    * 指定されたワールド,eidのftを取得します
    * @param  string $levelName
    * @param  int    $entityId
-   * @return bool|FT
+   * @return null|FT
    */
   public function getFt(string $levelName, int $entityId){
     if (!isset($this->fts[$levelName][$entityId])) {
-      return false;
+      return null;
     }else{
       return $this->fts[$levelName][$entityId];
     }
+  }
+
+  /**
+   * ftの個数を返します
+   * @return int
+   */
+  public function getFtsCount(): int{
+    $fc = 0;
+    $fts = $this->getFts();
+    if ($fts !== false) {
+      foreach ($fts as $levFts) {
+        foreach ($levFts as $fts) {
+          ++$fc;
+        }
+      }
+    }
+    return $fc;
   }
 
   /**
