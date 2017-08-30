@@ -32,7 +32,9 @@
   "command.txt.usage.indent": "改行したい場合は§6#§bを挿入",
 
   "command.txt.set": "浮き文字を設置しました。",
+  "command.txt.world": "このワールドでは浮き文字を操作できません。",
   "command.txt.limit": "{limit} までに文字数が制限されています。",
+  "command.txt.feed": "改行は {feed} 回までに制限されています。",
   "command.txt.remove": "浮き文字を削除しました。",
   "command.txt.updated": "浮き文字を更新しました。",
   "command.txt.permission": "指定された浮き文字を扱う権限がありません。",
@@ -47,6 +49,7 @@
 
   "command.console": "ゲーム内から使用してください。",
 
+  "txt.failed": "浮き文字の生成に失敗しました。",
   "txt.exists": "指定された座標に既に浮き文字が存在します。",
   "txt.doesn`t.exists": "指定されたIDの浮き文字が存在しません。",
   "txt.user.doesn`t.exists": "指定されたユーザーの浮き文字は存在しません。"

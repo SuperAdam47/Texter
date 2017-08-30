@@ -121,11 +121,10 @@ class TexterAPI{
   /**
    * テキストをファイルに保存します
    * @param  FT     $text
-   * @param  string $player
    * @param  bool   $new  新規かどうか
    * @return bool
    */
-  public function saveFt(FT $text, string $player = "", bool $new = false): bool{
+  public function saveFt(FT $text, bool $new = false): bool{
     $levelName = $text->level->getName();
     $key = $levelName . $text->z . $text->x . $text->y;
     if ($new) { // 新規
@@ -142,7 +141,7 @@ class TexterAPI{
       "Zvec"  => sprintf('%0.1f', $text->z),
       "TITLE" => $text->title,
       "TEXT"  => $text->text,
-      "OWNER" => $player
+      "OWNER" => $text->owner
     ];
     $this->ft_config->set($key, $data);
     $this->ft_config->save();

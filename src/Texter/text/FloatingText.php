@@ -45,10 +45,10 @@ class FloatingText extends Text{
     $this->z = $z;
     $this->title = $title;
     $this->text  = $text;
-    $this->owner = $owner;
+    $this->owner = strtolower($owner);
     $this->eid = Entity::$entityCount++;
     $this->api = TexterApi::getInstance();
-    if ($this->api->saveFt($this, $owner, true)) {
+    if ($this->api->saveFt($this, true)) {
       $this->sendToLevel(self::SEND_TYPE_ADD);
     }else {
       $this->failed = true;
@@ -65,7 +65,7 @@ class FloatingText extends Text{
     if (is_numeric($x)) {
       $tmpX = $this->x;
       $this->x = $x;
-      if ($this->api->saveFt($this, $this->owner)) {
+      if ($this->api->saveFt($this)) {
         $this->sendToLevel(self::SEND_TYPE_ADD);
         return true;
       }else {
@@ -85,7 +85,7 @@ class FloatingText extends Text{
     if (is_numeric($y)) {
       $tmpY = $this->y;
       $this->y = $y;
-      if ($this->api->saveFt($this, $this->owner)) {
+      if ($this->api->saveFt($this)) {
         $this->sendToLevel(self::SEND_TYPE_ADD);
         return true;
       }else {
@@ -105,7 +105,7 @@ class FloatingText extends Text{
     if (is_numeric($z)) {
       $tmpZ = $this->z;
       $this->z = $z;
-      if ($this->api->saveFt($this, $this->owner)) {
+      if ($this->api->saveFt($this)) {
         $this->sendToLevel(self::SEND_TYPE_ADD);
         return true;
       }else {
@@ -125,7 +125,7 @@ class FloatingText extends Text{
     $this->sendToLevel(self::SEND_TYPE_REMOVE);
     $tmpLev = $this->level;
     $this->level = $level;
-    if ($this->api->saveFt($this, $this->owner)) {
+    if ($this->api->saveFt($this)) {
       $this->sendToLevel(self::SEND_TYPE_ADD);
       return true;
     }else {
@@ -147,7 +147,7 @@ class FloatingText extends Text{
       $this->sendToLevel(self::SEND_TYPE_REMOVE);
       $tmpLev = $this->level;
       $this->level = $level;
-      if ($this->api->saveFt($this, $this->owner)) {
+      if ($this->api->saveFt($this)) {
         $this->sendToLevel(self::SEND_TYPE_ADD);
         return true;
       }else {
@@ -171,7 +171,7 @@ class FloatingText extends Text{
     $this->x = $pos->x;
     $this->y = $pos->y;
     $this->z = $pos->z;
-    if ($this->api->saveFt($this, $this->owner)) {
+    if ($this->api->saveFt($this)) {
       $this->sendToLevel(self::SEND_TYPE_ADD);
       return true;
     }else {
@@ -190,7 +190,7 @@ class FloatingText extends Text{
    */
   public function setTitle(string $title): bool{
     $this->title = str_replace("#", "\n", $title);
-    $this->api->saveFt($this, $this->owner);
+    $this->api->saveFt($this);
     $this->sendToLevel(self::SEND_TYPE_ADD);
     return true;
   }
@@ -203,7 +203,7 @@ class FloatingText extends Text{
    */
   public function setText(string $text): bool{
     $this->text = str_replace("#", "\n", $text);
-    $this->api->saveFt($this, $this->owner);
+    $this->api->saveFt($this);
     $this->sendToLevel(self::SEND_TYPE_ADD);
     return true;
   }
@@ -286,8 +286,8 @@ class FloatingText extends Text{
    * @return bool   true
    */
   public function setOwner(string $owner): bool{
-    $this->owner = $owner;
-    $this->api->saveFt($this, $owner, true);
+    $this->owner = strtolower($owner);
+    $this->api->saveFt($this);
     $this->sendToLevel(self::SEND_TYPE_ADD);
     return true;
   }
@@ -298,7 +298,8 @@ class FloatingText extends Text{
    * @return bool
    */
   public function canEditFt(Player $player): bool{
-    if ($player->isOp() || $this->owner === $player->getName()) {
+    $name = strtolower($player->getName());
+    if ($player->isOp() || $this->owner === $name) {
       return true;
     }else {
       return false;

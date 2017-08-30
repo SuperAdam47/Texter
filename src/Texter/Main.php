@@ -64,7 +64,7 @@ define("DS", DIRECTORY_SEPARATOR);
 class Main extends PluginBase {
 
   const NAME = "Texter";
-  const VERSION = "v2.2.0-b5";
+  const VERSION = "v2.2.0-b6";
   const CODENAME = "Papilio dehaanii(カラスアゲハ)";
 
   const FILE_CONFIG = "config.yml";
@@ -73,7 +73,7 @@ class Main extends PluginBase {
   const FILE_FTP = "ftps.json";// for old format
   const FILE_FT = "fts.json";
 
-  const CONFIG_VERSION = 20;
+  const CONFIG_VERSION = 22;
 
   /** @var bool $devmode */
   public $devmode = false;
@@ -121,8 +121,33 @@ class Main extends PluginBase {
     return clone $this->rpk;
   }
 
+  /**
+   * 文字数制限のための文字数を取得します
+   * @return int
+   */
   public function getCharaLimit(): int{
     return (int)$this->config->get("limit");
+  }
+
+  /**
+   * 改行数制限のための改行数を設定します
+   * @return int
+   */
+  public function getFeedLimit(): int{
+    return (int)$this->config->get("feed");
+  }
+
+  /**
+   * ワールド制限のためのワールド名を配列で取得します
+   * @return array
+   */
+  public function getWorldLimit(): array{
+    $worlds = $this->config->get("world");
+    if ($worlds !== false) {
+      return array_flip($worlds);
+    }else {
+      return [];
+    }
   }
 
   /****************************************************************************/
@@ -278,7 +303,6 @@ class Main extends PluginBase {
     }
   }
 
-  // TODO: コンストラクタでのエラー時例外処理(try-catch)
   private function prepareTexts(){
     if (!empty($this->crfts)) {
       foreach ($this->crfts as $value) {
@@ -291,8 +315,13 @@ class Main extends PluginBase {
         if ($this->getServer()->loadLevel($value["WORLD"])) {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
           $crft = new CRFT($level, $value["Xvec"], $value["Yvec"], $value["Zvec"], $title, $text);
+          if ($crft->failed) {
+            $message = $this->language->transrateString("txt.failed");
+            $this->getLogger()->notice($message);
+          }
         }else {
-          $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
+          $message = $this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]);
+          $this->getLogger()->notice($message);
         }
       }
     }
@@ -306,9 +335,14 @@ class Main extends PluginBase {
         //
         if ($this->getServer()->loadLevel($value["WORLD"])) {
           $level = $this->getServer()->getLevelByName($value["WORLD"]);
-          $ft = new FT($level, $value["Xvec"], $value["Yvec"], $value["Zvec"], $title, $text, $value["OWNER"]);
+          $ft = new FT($level, $value["Xvec"], $value["Yvec"], $value["Zvec"], $title, $text, strtolower($value["OWNER"]));
+          if ($ft->failed) {
+            $message = $this->language->transrateString("txt.failed");
+            $this->getLogger()->notice($message);
+          }
         }else {
-          $this->getLogger()->notice($this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]));
+          $message = $this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]);
+          $this->getLogger()->notice($message);
         }
       }
     }

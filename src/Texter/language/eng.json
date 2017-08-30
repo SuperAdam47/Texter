@@ -48,6 +48,7 @@
 
   "command.console": "Please use from within game.",
 
+  "txt.failed": "Failed to generate floating text.",
   "txt.doesn`t.exists": "The specified ID floating text does not exist.",
   "txt.user.doesn`t.exists": "The float text of the specified user does not exist."
 }

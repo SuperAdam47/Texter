@@ -35,39 +35,47 @@ class TxtCommand extends Command{
     $this->help .= $this->lang->transrateString("command.txt.usage.remove")."\n";
     $this->help .= $this->lang->transrateString("command.txt.usage.update")."\n";
     $this->help .= $this->lang->transrateString("command.txt.usage.indent");
+    //
+    $this->lim   = $this->main->getCharaLimit();
+    $this->feed  = $this->main->getFeedLimit();
+    $this->world = $this->main->getWorldLimit();
   }
 
   public function execute(CommandSender $sender, string $label, array $args){
     if (!$this->main->isEnabled()) return false;
     if (!$this->testPermission($sender)) return false;
     if ($sender instanceof Player) {
-      if (isset($args[0])) {
-        $name = $sender->getName();
-        $lev = $sender->level;
-        $levn = $lev->getName();
-        $lim = $this->main->getCharaLimit();
-        switch (strtolower($args[0])) { // subCommand
-          case 'add':
-          case 'a':
-            if (!empty($args[1])) { // Title
-              $title = str_replace(["#", "§"], ["\n", ""], $args[1]);
-              if (!empty($args[2])) { // Text
-                $texts = array_slice($args, 2);
-                $text = str_replace(["#", "§"], ["\n", ""], implode(" ", $texts));
-              }else {
-                $text = "";
-              }
-              if (!$sender->isOp()) {
-                $title = TF::clean($title);// HACK: "§a" "a" isn`t deleted
-                $text = TF::clean($text);
-              }
-              if (mb_strlen($title . $text, "UTF-8") > $lim) {
-                $message = $this->lang->transrateString("command.txt.limit", ["{limit}"], [$lim]);
-                $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
-              }else {
+      $lev = $sender->level;
+      $levn = $lev->getName();
+      if (array_key_exists($levn, $this->world)) {
+        $message = $this->lang->transrateString("command.txt.world");
+        $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+      }else {
+        if (isset($args[0])) {
+          switch (strtolower($args[0])) { // subCommand
+            case 'add':
+            case 'a':
+              if (!empty($args[1])) { // Title
+                $title = str_replace("#", "\n", $args[1]);
+                $title = TF::clean($title);
+                if (!empty($args[2])) { // Text
+                  $texts = array_slice($args, 2);
+                  $text = str_replace("#", "\n", implode(" ", $texts));
+                  $text = TF::clean($text);
+                }else {
+                  $text = "";
+                }
+                if (!$sender->isOp()) {
+                  $message = $this->checkTextLimit($title.$text);
+                  if ($message !== true) {
+                    $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+                    return true;
+                  }
+                }
                 $x = sprintf('%0.1f', $sender->x);
                 $y = sprintf('%0.1f', $sender->y + 1);
                 $z = sprintf('%0.1f', $sender->z);
+                $name = $sender->getName();
                 $ft = new FT($lev, $x, $y, $z, $title, $text, $name);
                 if ($ft->failed) {
                   $message = $this->lang->transrateString("txt.exists");
@@ -76,96 +84,133 @@ class TxtCommand extends Command{
                   $message = $this->lang->transrateString("command.txt.set");
                   $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
                 }
+              }else {
+                $message = $this->lang->transrateString("command.txt.usage.add");
+                $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
               }
-            }else {
-              $message = $this->lang->transrateString("command.txt.usage.add");
-              $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
-            }
-          break;
+            break;
 
-          case 'remove':
-          case 'r':
-            if (isset($args[1])) { // entityId
-              $eid = (int)$args[1];
-              $ft = $this->api->getFt($levn, $eid);
-              if ($ft !== null) {
-                if ($ft->canEditFt($sender)) {
-                  $ft->remove();
-                  $message = $this->lang->transrateString("command.txt.remove");
-                  $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
+            case 'remove':
+            case 'r':
+              if (isset($args[1])) { // entityId
+                $eid = (int)$args[1];
+                $ft = $this->api->getFt($levn, $eid);
+                if ($ft !== null) {
+                  if ($ft->canEditFt($sender)) {
+                    $ft->remove();
+                    $message = $this->lang->transrateString("command.txt.remove");
+                    $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
+                  }else {
+                    $message = $this->lang->transrateString("command.txt.permission");
+                    $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+                  }
                 }else {
-                  $message = $this->lang->transrateString("command.txt.permission");
+                  $message = $this->lang->transrateString("txt.doesn`t.exists");
                   $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
                 }
               }else {
-                $message = $this->lang->transrateString("txt.doesn`t.exists");
-                $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+                $message = $this->lang->transrateString("command.txt.usage.remove");
+                $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
               }
-            }else {
-              $message = $this->lang->transrateString("command.txt.usage.remove");
-              $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
-            }
-          break;
+            break;
 
-          case 'update':
-          case 'u':
-            if (isset($args[1]) && isset($args[2]) && !empty($args[3])) {
-              // eid && title" or "text" && contents
-              $eid = (int)$args[1];
-              $ft = $this->api->getFt($levn, $eid);
-              if ($ft !== null) {
-                if ($ft->canEditFt($sender)) {
-                  switch (strtolower($args[2])) {
-                    case 'title':
-                      if (mb_strlen($args[3] . $ft->text, "UTF-8") > $lim) {
-                        $message = $this->lang->transrateString("command.txt.limit", ["{limit}"], [$lim]);
-                        $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
-                      }else {
+            case 'update':
+            case 'u':
+              if (isset($args[1]) && isset($args[2]) && !empty($args[3])) {
+                // eid && title" or "text" && contents
+                $eid = (int)$args[1];
+                $ft = $this->api->getFt($levn, $eid);
+                if ($ft !== null) {
+                  if ($ft->canEditFt($sender)) {
+                    switch (strtolower($args[2])) {
+                      case 'title':
+                        $title = str_replace("#", "\n", $args[3]);
+                        $title = TF::clean($title);
+                        if (!$sender->isOp()) {
+                          $message = $this->checkTextLimit($title.$ft->text);
+                          if ($message !== true) {
+                            $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+                            return true;
+                          }
+                        }
                         $ft->setTitle($args[3]);
                         $message = $this->lang->transrateString("command.txt.updated");
                         $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
-                      }
-                    break;
+                      break;
 
-                    case 'text':
-                      $ft->setText($args[3]);
-                      $message = $this->lang->transrateString("command.txt.updated");
-                      $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
-                    break;
+                      case 'text':
+                        if (!empty($args[3])) {
+                          $texts = array_slice($args, 3);
+                          $text = str_replace("#", "\n", implode(" ", $texts));
+                          $text = TF::clean($text);
+                        }else {
+                          $text = "";
+                        }
+                        if (!$sender->isOp()) {
+                          $message = $this->checkTextLimit($ft->title.$text);
+                          if ($message !== true) {
+                            $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+                            return true;
+                          }
+                        }
+                        $ft->setText($text);
+                        $message = $this->lang->transrateString("command.txt.updated");
+                        $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
+                      break;
 
-                    default:
-                      $message = $this->lang->transrateString("command.txt.usage.update");
-                      $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
-                    break;
+                      default:
+                        $message = $this->lang->transrateString("command.txt.usage.update");
+                        $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
+                      break;
+                    }
+                  }else {
+                    $message = $this->lang->transrateString("command.txt.permission");
+                    $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
                   }
                 }else {
-                  $message = $this->lang->transrateString("command.txt.permission");
+                  $message = $this->lang->transrateString("txt.doesn`t.exists");
                   $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
                 }
               }else {
-                $message = $this->lang->transrateString("txt.doesn`t.exists");
-                $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+                $message = $this->lang->transrateString("command.txt.usage.update");
+                $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
               }
-            }else {
-              $message = $this->lang->transrateString("command.txt.usage.update");
-              $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
-            }
-          break;
+            break;
 
-          case 'help':
-          case 'h':
-          case '?':
-          default:
-            $sender->sendMessage(TF::AQUA . Lang::PREFIX . $this->help);
-          break;
+            case 'help':
+            case 'h':
+            case '?':
+            default:
+              $sender->sendMessage(TF::AQUA . Lang::PREFIX . $this->help);
+            break;
+          }
+        }else {
+          $sender->sendMessage(TF::AQUA . Lang::PREFIX . $this->help);
         }
-      }else {
-        $sender->sendMessage(TF::AQUA . Lang::PREFIX . $this->help);
       }
     }else {
       $message = $this->lang->transrateString("command.console");
       $this->main->getLogger()->info(TF::RED . $message);
     }
     return true;
+  }
+
+  /**
+   * テキストのルールに違反していないか確かめます
+   * @param  string      $text
+   * @return string|bool
+   */
+  private function checkTextLimit(string $text){
+    if ($this->lim > -1 || mb_strlen($text, "UTF-8") > $this->lim) {
+      $message = $this->lang->transrateString("command.txt.limit", ["{limit}"], [$this->lim]);
+      return $message;
+    }else {
+      if ($this->feed > -1 || mb_substr_count($text, "\n" , "UTF-8") > $this->feed) {
+        $message = $this->lang->transrateString("command.txt.feed", ["{feed}"], [$this->feed]);
+        return $message;
+      }else {
+        return true;
+      }
+    }
   }
 }
