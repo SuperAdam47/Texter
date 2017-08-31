@@ -32,11 +32,13 @@
   "command.txt.usage.indent": "When breaking a line, insert §6#§b",
 
   "command.txt.set": "Placed floating text.",
+  "command.txt.world": "You can`t manipulate floating letters in this world.",
+  "command.txt.limit": "The number of characters is limited by {limit}.",
+  "command.txt.feed": "Line feeds are limited to {feed} times.",
   "command.txt.limit": "The number of characters is limited by {limit}.",
   "command.txt.remove": "Removed floating text.",
   "command.txt.updated": "Updated floating text.",
   "command.txt.permission": "You don`t have permission to edit the specified floating text.",
-  "command.txt.exists": "Floating text already exists at the specified coordinates.",
 
   "command.txtadm.usage.allremove": "/t(xt)adm a(ll)r(emove)",
   "command.txtadm.usage.userremove": "/t(xt)adm u(ser)r(emove) <userName>",
@@ -49,6 +51,7 @@
   "command.console": "Please use from within game.",
 
   "txt.failed": "Failed to generate floating text.",
+  "txt.exists": "Floating text already exists at the specified coordinates.",
   "txt.doesn`t.exists": "The specified ID floating text does not exist.",
   "txt.user.doesn`t.exists": "The float text of the specified user does not exist."
 }

@@ -25,7 +25,7 @@ Please write the version of Minecraft you are using. example: MC:Win10Ed. v1.1.5
 お使いのTexterのバージョンをご記入ください。 例: Texter v2.2.0
 Please write the version of Texter you are using. Example: Texter v 2.2.0
 -->
-* Texter version
+* Texter version:
 
 <!--
 問題をできるだけ詳しく以下にご記入ください。

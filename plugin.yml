@@ -1,6 +1,6 @@
 name: Texter
 main: Texter\Main
-version: 2.2.0-b6
+version: 2.2.0
 api:
   - 3.0.0
   - 3.0.0-ALPHA5
