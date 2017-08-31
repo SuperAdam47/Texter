@@ -22,15 +22,6 @@ checkUpdate: true
 # If you want to disable the command, prease set it to false
 canUseCommands: true
 
-# Write "new" if the path to Add/RemoveEntityPacket is
-# pocketmine\network\mcpe\protocol\...,
-# if not, please write "old".
-
-# Add/RemoveEntityPacketのパスが
-# pocketmine\newwork\mcpe\protocol\...なら"new"と記載し、
-# そうでなければ"old"と記載して下さい。
-path: new
-
 # 文字数の制限をする場合は文字数を, 不要なら -1 にしてください
 # To limit the number of characters, set it to that, if unnecessary, set it to -1.
 limit: 50

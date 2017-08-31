@@ -201,11 +201,11 @@ class TxtCommand extends Command{
    * @return string|bool
    */
   private function checkTextLimit(string $text){
-    if ($this->lim > -1 || mb_strlen($text, "UTF-8") > $this->lim) {
+    if ($this->lim > -1 && mb_strlen($text, "UTF-8") > $this->lim) {
       $message = $this->lang->transrateString("command.txt.limit", ["{limit}"], [$this->lim]);
       return $message;
     }else {
-      if ($this->feed > -1 || mb_substr_count($text, "\n" , "UTF-8") > $this->feed) {
+      if ($this->feed > -1 && mb_substr_count($text, "\n" , "UTF-8") > $this->feed) {
         $message = $this->lang->transrateString("command.txt.feed", ["{feed}"], [$this->feed]);
         return $message;
       }else {

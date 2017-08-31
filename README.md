@@ -23,11 +23,6 @@ Latest: ver **2.2.0** _Papilio dehaanii(カラスアゲハ)_
 - [x] MCPE v1.1.x
 - [ ] Minecraft(Bedrock) v1.2.x // TODO
 
-### Notice
-If your src is `pocketmine\network\protocol\Packets.php`, please write `path: old` in *config.yml* .  
-If not, please write `path: new`(initial value)  
-**※It will be deleted in the future.**
-
 ### Commands
 #### General command
 | \ |command|argument|alias|
@@ -79,11 +74,6 @@ TexterはFloatingTextPerticleを複数ワールドに渡り表示、削除がで
 - [x] 複数ワールドの表示
 - [x] MCPE v1.1.x
 - [ ] Minecraft(Bedrockエンジン) v1.2.x // TODO
-
-### お知らせ
-もしあなたがお使いのsrcが `pocketmine\network\protocol\{パケット.php}` という構成の場合、*config.yml* に、`path: old` と書いてください。  
-そうでない場合は、 `path: new` (初期値)で動作します。  
-**※今後この機能は削除されます**
 
 ### コマンド
 #### 一般用コマンド

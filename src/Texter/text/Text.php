@@ -9,6 +9,9 @@ use pocketmine\level\{
   Level,
   Position};
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\{
+  AddPlayerPacket,
+  RemoveEntityPacket};
 use pocketmine\item\Item;
 use pocketmine\utils\{
   TextFormat as TF,
@@ -328,11 +331,10 @@ abstract class Text{
    * AddPlayerPacketとして取得します
    * @return AddPlayerPacket $pk
    */
-  public function getAsAddPacket(){
-    $pk = $this->api->getAddPacket();
+  public function getAsAddPacket(): AddPlayerPacket{
+    $pk = new AddPlayerPacket();
     $pk->uuid = UUID::fromRandom();
     $pk->username = "text";
-    $pk->eid = $this->eid;// for old packetObject
     $pk->entityUniqueId = $this->eid;
     $pk->entityRuntimeId = $this->eid;// ...huh?
     $pk->item = Item::get(Item::AIR);
@@ -358,9 +360,8 @@ abstract class Text{
    * RemoveEntityPacketとして取得します
    * @return RemoveEntityPacket $pk
    */
-  public function getAsRemovePacket(){
-    $pk = $this->api->getRemovePacket();
-    $pk->eid = $this->eid;// for old packetObject
+  public function getAsRemovePacket(): RemoveEntityPacket{
+    $pk = new RemoveEntityPacket();
     $pk->entityUniqueId = $this->eid;
     return $pk;
   }

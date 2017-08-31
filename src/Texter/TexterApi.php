@@ -316,20 +316,4 @@ class TexterAPI{
     }
     return $fc;
   }
-
-  /**
-   * 有用な追加用パケットを取得します
-   * @return AddPlayerPacket
-   */
-  public function getAddPacket(){
-    return $this->main->getAddPacket();
-  }
-
-  /**
-   * 有用な削除用パケットを取得します
-   * @return RemoveEntityPacket
-   */
-  public function getRemovePacket(){
-    return $this->main->getRemovePacket();
-  }
 }

@@ -64,7 +64,7 @@ define("DS", DIRECTORY_SEPARATOR);
 class Main extends PluginBase {
 
   const NAME = "Texter";
-  const VERSION = "v2.2.0";
+  const VERSION = "v2.2.1";
   const CODENAME = "Papilio dehaanii(カラスアゲハ)";
 
   const FILE_CONFIG = "config.yml";
@@ -89,10 +89,6 @@ class Main extends PluginBase {
   private $crfts = [];
   /** @var array $fts */
   private $fts = [];
-  /** @var AddPlayerPacket $apk */
-  private $apk = null;
-  /** @var RemoveEntityPacket $rpk */
-  private $rpk = null;
 
   /****************************************************************************/
   /* Public functions */
@@ -103,22 +99,6 @@ class Main extends PluginBase {
    */
   public function getApi(): TexterApi{
     return $this->api;
-  }
-
-  /**
-   * 追加用パケットを取得します
-   * @return AddPlayerPacket $this->apk
-   */
-  public function getAddPacket(){
-    return clone $this->apk;
-  }
-
-  /**
-   * 削除用パケットを取得します
-   * @return RemoveEntityPacket $this->rpk
-   */
-  public function getRemovePacket(){
-    return clone $this->rpk;
   }
 
   /**
@@ -156,7 +136,6 @@ class Main extends PluginBase {
   public function onLoad(){
     $this->loadFiles();
     $this->initApi();
-    $this->checkPath();
     $this->registerCommands();
     $this->checkUpdate();
     $this->setTimezone();
@@ -234,21 +213,6 @@ class Main extends PluginBase {
 
   private function initApi(){
     $this->api = new TexterApi($this);
-  }
-
-  private function checkPath(){
-    $path = strtolower($this->config->get("path"));
-    switch ($path) {
-      case 'new':
-        $this->apk = new \pocketmine\network\mcpe\protocol\AddPlayerPacket();
-        $this->rpk = new \pocketmine\network\mcpe\protocol\RemoveEntityPacket();
-      break;
-
-      default:
-        $this->apk = new \pocketmine\network\protocol\AddPlayerPacket();
-        $this->rpk = new \pocketmine\network\protocol\RemoveEntityPacket();
-      break;
-    }
   }
 
   private function registerCommands(){
