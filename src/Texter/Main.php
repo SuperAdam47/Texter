@@ -49,7 +49,9 @@ use Texter\EventListener;
 use Texter\TexterApi;
 use Texter\commands\{
   TxtCommand,
-  TxtAdmCommand};
+  TxtCommandOld,
+  TxtAdmCommand,
+  TxtAdmCommandOld};
 use Texter\language\Lang;
 use Texter\text\{
   CantRemoveFloatingText as CRFT,
@@ -218,10 +220,24 @@ class Main extends PluginBase {
   private function registerCommands(){
     if ((bool)$this->config->get("canUseCommands")) {
       $map = $this->getServer()->getCommandMap();
-      $commands = [
-        new TxtCommand($this),
-        new TxtAdmCommand($this)
-      ];
+      switch (strtolower($this->getServer()->getName())) {
+        case 'pocketmine-mp':
+          $commands = [
+            new TxtCommand($this),
+            new TxtAdmCommand($this)
+          ];
+        break;
+
+        // NOTE: Confirmed
+        case 'genisyspro':
+        case 'leveryl':
+        default:
+          $commands = [
+            new TxtCommandOld($this),
+            new TxtAdmCommandOld($this)
+          ];
+        break;
+      }
       $map->registerAll(self::NAME, $commands);
       $this->getLogger()->info(TF::GREEN.$this->language->transrateString("commands.registered"));
     }else {
