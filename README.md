@@ -1,32 +1,34 @@
-<img src="/image/Texter.png" width="400px">
+<img src="/assets/Texter.png" width="400px">
+
+## Overview
+Select Language: [English](#eng), [日本語](#jpn)
+
+***
+<a name="eng"></a>
+## English
+
+<!--
+## !! Caution !!
+This branch is under development.
+It may have many bugs.
+-->
 
 ## Texter
 Texter is plugin that displays and deletes FloatingTextPerticle supported to multi-world.  
-Latest: ver **2.1.9** _Convallaria majalis(鈴蘭)_  
+Latest: ver **2.2.0** _Papilio dehaanii(カラスアゲハ)_  
 
-### Supporting(サポート)
+### Supporting
+- [x] Multi-language (eng, jpn)
 - [x] Multi-world display
 - [x] MCPE v1.1.x
 - [ ] Minecraft(Bedrock) v1.2.x // TODO
 
-### Notice(お知らせ)
-##### English
-If your src is `pocketmine\network\protocol\Packets`, please write `path: old` in *config.yml* .  
+### Notice
+If your src is `pocketmine\network\protocol\Packets.php`, please write `path: old` in *config.yml* .  
 If not, please write `path: new`(initial value)  
 **※It will be deleted in the future.**
 
-##### 日本語
-もしあなたがお使いのsrcが `pocketmine\network\protocol\{パケット}` という構成の場合、*config.yml* に、`path: old` と書いてください。  
-そうでない場合は、 `path: new` (初期値)で動作します。  
-**※今後この機能は削除されます**
-
-***
-## English
-About bug report  
-Please report on Issue tracker or report it on Twitter.
-
-## Commands
-
+### Commands
 #### General command
 | \ |command|argument|alias|
 |:--:|:--:|:--:|:--:|
@@ -40,15 +42,14 @@ Please report on Issue tracker or report it on Twitter.
 |:--:|:--:|:--:|:--:|
 |Remove all|`/txtadm allremove`|`none`|`/tadm ar`|
 |Remove texts/user|`/txtadm userremove`|`<username>`|`/tadm ur`|
-|View extensions|`/txtadm extensions`|`none`|`/tadm exts`|
+|Info|`/txtadm info`|`none`|`/tadm i`|
 |Help|`/txtadm or /txtadm help`|`none`|`/tadm ?`|
 
 **Please use `#` for line breaks.**
 
-## json notation
-
-``` json
-"0": {
+### json notation
+```json
+"anythingString": {
   "WORLD" : "worldName",
   "Xvec" : 128,
   "Yvec" : 90,
@@ -61,40 +62,67 @@ It is output as follows.
 <img src="https://cloud.githubusercontent.com/assets/16377174/24609877/642d64f6-18b7-11e7-9b38-488e0ada3f1e.JPG" width="320px">
 
 ***
+<a name="jpn"></a>
 ## 日本語
-バグ報告について  
-こちらでIssueを建てていただいてもかまいませんし、Twitterにて報告して頂いても構いません。
 
-## コマンド
+<!--
+## !! 注意 !!
+このブランチは開発中です。多くのバグを含む可能性があります。
+-->
 
+## Texter
+TexterはFloatingTextPerticleを複数ワールドに渡り表示、削除ができるプラグインです。  
+最新バージョン: **2.2.0** _Papilio dehaanii(カラスアゲハ)_  
+
+### 対応状況
+- [x] 複数言語 (eng, jpn)
+- [x] 複数ワールドの表示
+- [x] MCPE v1.1.x
+- [ ] Minecraft(Bedrockエンジン) v1.2.x // TODO
+
+### お知らせ
+もしあなたがお使いのsrcが `pocketmine\network\protocol\{パケット.php}` という構成の場合、*config.yml* に、`path: old` と書いてください。  
+そうでない場合は、 `path: new` (初期値)で動作します。  
+**※今後この機能は削除されます**
+
+### コマンド
 #### 一般用コマンド
 | \ |コマンド|引数|エイリアス|
 |:--:|:--:|:--:|:--:|
 |浮き文字追加|`/txt add`|`<タイトル> [テキスト]`|`/txt a`|
 |浮き文字削除|`/txt remove`|`<ID>`|`/txt r`|
 |浮き文字更新|`/txt update`|`<タイトル, テキスト> <ID> <メッセージ>`|`/txt u`|
-|help|`/txt or /txt help`|`無し`|`/txt ?`|
+|ヘルプ|`/txt or /txt help`|`無し`|`/txt ?`|
 
 #### 管理用コマンド
 | \ |コマンド|引数|エイリアス|
 |:--:|:--:|:--:|:--:|
 |浮き文字すべて削除|`/txtadm allremove`|`none`|`/tadm ar`|
 |ユーザーの浮き文字を削除|`/txtadm userremove`|`<username>`|`/tadm ur`|
-|拡張を見る|`/txtadm extensions`|`none`|`/tadm exts`|
-|help|`/txtadm or /txtadm help`|`none`|`/tadm ?`|
+|浮き文字の各種情報を見る|`/txtadm info`|`none`|`/tadm i`|
+|ヘルプ|`/txtadm or /txtadm help`|`none`|`/tadm ?`|
 
 **改行の際には `#` を使用してください。**
 
-## json記法
-
-``` json
-"0": {
-  "WORLD" : "world",
-  "Xvec" : 128,
-  "Yvec" : 90,
-  "Zvec" : 128,
-  "TITLE" : "title",
-  "TEXT" : "1st Line#2nd Line"
+### json記法
+```json
+{
+  "何かの文字列": {
+    "WORLD" : "world",
+    "Xvec" : 128,
+    "Yvec" : 90,
+    "Zvec" : 128,
+    "TITLE" : "title",
+    "TEXT" : "1st Line#2nd Line"
+  },
+  "何かの文字列2(他のものと同じではいけない)": {
+    "WORLD" : "world",
+    "Xvec" : 128,
+    "Yvec" : 90,
+    "Zvec" : 128,
+    "TITLE" : "title",
+    "TEXT" : "1st Line#2nd Line"
+  }
 }
 ```
 

@@ -29,7 +29,7 @@ use Texter\Main;
  *
  * Config Class for simple config manipulation of multiple formats.
  */
-class tunedConfig{
+class TunedConfig{
 	const DETECT = -1; //Detect by file extension
 	const PROPERTIES = 0; // .properties
 	const CNF = self::PROPERTIES; // .cnf

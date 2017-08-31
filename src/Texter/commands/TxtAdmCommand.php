@@ -2,159 +2,114 @@
 
 namespace Texter\commands;
 
-# pocketmine
+# Pocketmine
 use pocketmine\Player;
+use pocketmine\command\{
+  Command,
+  CommandSender};
+use pocketmine\math\Vector3;
+use pocketmine\utils\TextFormat as TF;
 
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
-
-# texter
+# Texter
 use Texter\Main;
-
+use Texter\language\Lang;
+use Texter\text\FloatingText as FT;
 /**
- * @var TxtAdmCommand
+ * TxtAdmCommand
  */
 class TxtAdmCommand extends Command{
+
+  /** @var string $help */
+  private $help = "";
+  /** @var string $help_console */
+  private $help_console = "";
 
   public function __construct(Main $main){
     $this->main = $main;
     $this->api = $main->getAPI();
-    parent::__construct("txtadm", $this->api->getMessage("command.description.txtadm"), "/txtadm <ar | ur | info>", ["tadm"]);//登録
+    $this->lang = Lang::getInstance();
+    parent::__construct("txtadm", $this->lang->transrateString("command.description.txtadm"), "/txtadm <ar | ur | info>", ["tadm"]);//登録
     //
     $this->setPermission("texter.command.txtadm");
+    //
+    $this->help  = $this->lang->transrateString("command.txt.usage")."\n";
+    $this->help .= $this->lang->transrateString("command.txtadm.usage.allremove")."\n";
+    $this->help .= $this->lang->transrateString("command.txtadm.usage.userremove")."\n";
+    $this->help .= $this->lang->transrateString("command.txtadm.usage.info");
   }
 
-  public function execute(CommandSender $s, $cmd, array $args){
+  public function execute(CommandSender $sender, string $label, array $args){
     if (!$this->main->isEnabled()) return false;
-    if (!$this->testPermission($s)) return false;
-    if ($s instanceof Player) {
-      if (isset($args[0])) {
-        strtolower($args[0]);
-        switch ($args[0]) {
-          case 'allremove':
-          case 'ar':
-            $result = $this->api->removeFtps($s);
-            if ($result === false) {
-              $s->sendMessage("§b[Texter] §c".$this->api->getMessage("command.txtadm.notexists"));
-            }else {
-              $s->sendMessage("§b[Texter] §a".str_replace("{count}", $result, $this->api->getMessage("command.txtadm.allremove")));
-            }
-          break;
-
-          case 'userremove':
-          case 'ur':
-            if (isset($args[1])) {
-              $return = $this->api->removeUserFtps($args[1]);
-              if (!$return || $return === 0) {
-                $s->sendMessage("§b[Texter] §c".$this->api->getMessage("txt.user.doesn`t.exists"));
-              }else {
-                $s->sendMessage("§b[Texter] §a".str_replace("{user}", $args[1], $this->api->getMessage("command.txtadm.userremove")));
+    if (!$this->testPermission($sender)) return false;
+    if (isset($args[0])) {
+      $name = $sender->getName();
+      $lev = $sender->level;
+      $levn = $lev->getName();
+      switch (strtolower($args[0])) { // subCommand
+        case 'allremove':
+        case 'ar':
+          $fts = $this->api->getFts();
+          $count = $this->api->getFtsCount();
+          if ($fts === 0) {
+            $message = $this->lang->transrateString("command.txtadm.notexists");
+            $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+          }else {
+            foreach ($fts as $levFts) {
+              foreach ($levFts as $ft) {
+                $ft->remove();
               }
-            }else {
-              $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txtadm.usage.ur"));
             }
-          break;
-
-          case 'extensions':
-          case 'exts':
-            $exts = $this->api->getExtensions();
-            if ($exts === false) {
-              $s->sendMessage("§b[Texter] ".str_replace("{exts}", "0", $this->api->getMessage("command.txtadm.extensions")));
-            }else {
-              $n = [];
-              foreach ($exts as $ext) {
-                $n[] = "{$ext->getName()}  v{$ext->getVersion()}";
-              }
-              $s->sendMessage("§b[Texter] ".str_replace("{exts}", count($n), $this->api->getMessage("command.txtadm.extensions"))."\n§a - ".implode("\n - ", $n));
-            }
-          break;
-
-          case 'info':
-            $result = $this->count();
-            $s->sendMessage("§b[Texter] \n§bcrftps: §6".$result[0]."\n§bftps: §6".$result[1]."\n§7".Main::NAME." ".Main::VERSION." - ".Main::CODENAME);
-          break;
-
-          case 'help':
-          case 'h':
-            $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.allremove")."\n§b".$this->api->getMessage("command.txtadm.usage.userremove")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
-          break;
-
-          case 'test':
-            if ($this->main->devmode) {
-              for ($i=1; $i<51; $i++) {
-                $this->api->addFtp($s, [$s->x+$i, $s->y, $s->z], "test", "§$i");
-              }
-              var_dump($this->api->getCrftps());
-            }
-          break;
-
-          default:
-            $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.allremove")."\n§b".$this->api->getMessage("command.txtadm.usage.userremove")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
-          break;
-        }
-      }else {
-        $s->sendMessage("§b[Texter] ".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.allremove")."\n§b".$this->api->getMessage("command.txtadm.usage.userremove")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
-      }
-      return true;
-    }else {
-      if (isset($args[0])) {
-        switch (strtolower($args[0])) {
-          case 'extensions':
-          case 'exts':
-            $exts = $this->api->getExtensions();
-            if ($exts === false) {
-              $this->main->getLogger()->info("§b".str_replace("{exts}", "0", $this->api->getMessage("command.txtadm.extensions")));
-            }else {
-              $n = [];
-              foreach ($exts as $ext) {
-                $n[] = "{$ext->getName()} v{$ext->getVersion()}";
-              }
-              $this->main->getLogger()->info("§b".str_replace("{exts}", count($n), $this->api->getMessage("command.txtadm.extensions"))."\n§a - ".implode("\n - ", $n));
+            $message = $this->lang->transrateString("command.txtadm.allremove", ["{count}"], [$count]);
+            $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
           }
-          break;
+        break;
 
-          case 'info':
-            $result = $this->count();
-            $this->main->getLogger()->info("§bcrftps: §6".$result[0]." §b| ftps: §6".$result[1]." §b| version: §7".Main::NAME." ".Main::VERSION." - ".Main::CODENAME);
-          break;
+        case 'userremove':
+        case 'ur':
+          if (isset($args[1])) { // username
+            $fts = $this->api->getFtsByName($args[1]);
+            if (empty($fts)) {
+              $message = $this->lang->transrateString("txt.user.doesn`t.exists");
+              $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
+            }else {
+              $message = $this->lang->transrateString("command.txtadm.userremove", ["{user}"], [$args[1]]);
+              $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
+            }
+          }else {
+            $message = $this->lang->transrateString("command.txtadm.usage.ur");
+            $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
+          }
+        break;
 
-          case 'help':
-          case 'h':
-            $this->main->getLogger()->info("§b".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
-          break;
+        case 'info':
+        case 'i':
+          $crfts = $this->api->getCrftsCount();
+          $fts = $this->api->getFtsCount();
+          $message  = TF::AQUA . Lang::PREFIX . "\n";
+          $message .= TF::AQUA . "crfts: " . TF::GOLD . $crfts . "\n";
+          $message .= TF::AQUA . "fts: " . TF::GOLD . $fts . "\n";
+          $message .= TF::GRAY . Main::NAME . " " . Main::VERSION . " - " . Main::CODENAME;
+          $sender->sendMessage(TF::AQUA . Lang::PREFIX . $message);
+        break;
 
-          default:
-            $this->main->getLogger()->info("§c".$this->api->getMessage("command.console"));
-          break;
-        }
-      }else {
-        $this->main->getLogger()->info("§b".$this->api->getMessage("command.txt.usage.line1")."\n§b".$this->api->getMessage("command.txtadm.usage.info")."\n§b".$this->api->getMessage("command.txtadm.usage.exts"));
+        case 'help':
+        case 'h':
+        case '?':
+        default:
+          $sender->sendMessage(TF::AQUA . Lang::PREFIX . $this->help);
+        break;
+
+        case 'test':
+          if ($this->main->devmode) {
+            for ($i=1; $i<51; $i++) {
+              $ft = new FT($lev, $s->x+$i, $s->y, $s->z, "test", "§$i", $name);
+            }
+          }
+        break;
       }
+    }else {
+      $sender->sendMessage(TF::AQUA . Lang::PREFIX . $this->help);
     }
-  }
-
-  private function count(){
-    ####crftp####
-    $cc = 0;
-    $crftps = $this->api->getCrftps();
-    if ($crftps !== false) {
-      foreach ($crftps as $euids) {
-        foreach ($euids as $pk) {
-          ++$cc;
-        }
-      }
-    }
-    #############
-    ####ftps#####
-    $fc = 0;
-    $ftps = $this->api->getFtps();
-    if ($ftps !== false) {
-      foreach ($ftps as $euids) {
-        foreach ($euids as $pk) {
-          ++$fc;
-        }
-      }
-    }
-    return [$cc, $fc];
+    return true;
   }
 }

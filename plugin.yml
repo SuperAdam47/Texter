@@ -1,6 +1,6 @@
 name: Texter
 main: Texter\Main
-version: 2.1.9
+version: 2.2.0
 api:
   - 3.0.0
   - 3.0.0-ALPHA5
@@ -28,7 +28,7 @@ permissions:
     description: "permission that allows player to use texter"
     children:
       texter.command.txt:
-        default: op
+        default: true # もしopのみ実行させたい場合は op と記述してください
         description: "permission that allows player to use /txt"
       texter.command.txtadm:
         default: op

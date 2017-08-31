@@ -9,7 +9,7 @@ use pocketmine\scheduler\AsyncTask;
 /**
  * バージョンの確認
  */
-class checkUpdateTask extends AsyncTask{
+class CheckUpdateTask extends AsyncTask{
 
   public function onRun(){
     $curl = curl_init();

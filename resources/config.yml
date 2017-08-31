@@ -1,4 +1,4 @@
-configVersion: 10
+configVersion: 22
 
 # 日本語 ガイド
 # eng guide
@@ -30,3 +30,18 @@ canUseCommands: true
 # pocketmine\newwork\mcpe\protocol\...なら"new"と記載し、
 # そうでなければ"old"と記載して下さい。
 path: new
+
+# 文字数の制限をする場合は文字数を, 不要なら -1 にしてください
+# To limit the number of characters, set it to that, if unnecessary, set it to -1.
+limit: 50
+
+# 改行数の制限をする場合は改行回数を、不要なら -1 にしてください
+# To limit the number of line feeds, set it to that, if unnecessary, set it to -1.
+feed: 3
+
+# テキストを設置不可能なワールドを設定する場合はワールド名を指定してください
+# Please specify the world name when setting the world where text can not be set up
+world:
+  # example
+  # - world
+  # - world-2

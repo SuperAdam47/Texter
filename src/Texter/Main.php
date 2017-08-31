@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * ## To English-speaking countries
  *
  * Texter, the display FloatingTextPerticle plugin for PocketMine-MP
@@ -8,7 +8,7 @@
  *
  * Released under the "MIT license".
  * You should have received a copy of the MIT license
- * along with this program.  If not, see
+ * along with this program.  If not,
  * < http://opensource.org/licenses/mit-license.php >.
  *
  * ---------------------------------------------------------------------
@@ -25,154 +25,232 @@
 
 namespace Texter;
 
-# Base
-use pocketmine\plugin\PluginBase;
-use pocketmine\event\Listener;
-
-# Server
-use pocketmine\Server;
-
-# Level
-use pocketmine\level\Level;
-use pocketmine\level\Position;
-
-# Entity
-use pocketmine\entity\Entity;
-use pocketmine\entity\Item as ItemEntity;
-
-# Player
+# Pocketmine
 use pocketmine\Player;
-
-# Item
+use pocketmine\Server;
+use pocketmine\command\{
+  Command,
+  CommandSender};
+use pocketmine\entity\Entity;
+use pocketmine\event\{
+  Listener,
+  entity\EntityLevelChangeEvent,
+  player\PlayerJoinEvent};
 use pocketmine\item\Item;
-
-# Event
-use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\entity\EntityLevelChangeEvent;
-
-# Command
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
-use pocketmine\command\CommandExecutor;
-
-# Math
+use pocketmine\level\{
+  Level,
+  Position};
 use pocketmine\math\Vector3;
+use pocketmine\plugin\PluginBase;
+use pocketmine\utils\TextFormat as TF;
 
-# Network
-use pocketmine\network;
-
-# Utils
-use pocketmine\utils\TextFormat as Color;
-
-# etc
-use Texter\TexterAPI;
-use Texter\commands\TxtCommand;
-use Texter\commands\TxtAdmCommand;
-use Texter\task\worldGetTask;
-use Texter\task\checkUpdateTask;
-use Texter\utils\tunedConfig as Config;
+# Texter
+use Texter\EventListener;
+use Texter\TexterApi;
+use Texter\commands\{
+  TxtCommand,
+  TxtAdmCommand};
+use Texter\language\Lang;
+use Texter\text\{
+  CantRemoveFloatingText as CRFT,
+  FloatingText as FT};
+use Texter\task\{
+  CheckUpdateTask,
+  WorldGetTask};
+use Texter\utils\TunedConfig as Config;
 
 define("DS", DIRECTORY_SEPARATOR);
 
-class Main extends PluginBase implements Listener{
-  const NAME = 'Texter',
-        VERSION = 'v2.1.9',
-        CODENAME = 'Convallaria majalis(鈴蘭)';
+class Main extends PluginBase {
 
-        /* NOTE: for developpers option */
+  const NAME = "Texter";
+  const VERSION = "v2.2.0";
+  const CODENAME = "Papilio dehaanii(カラスアゲハ)";
+
+  const FILE_CONFIG = "config.yml";
+  const FILE_CRFTP = "crftps.json";// for old format
+  const FILE_CRFT = "crfts.json";
+  const FILE_FTP = "ftps.json";// for old format
+  const FILE_FT = "fts.json";
+
+  const CONFIG_VERSION = 22;
+
+  /** @var bool $devmode */
   public $devmode = false;
-        /* array $extensions */
-  public $extensions = [];
+  /** @var string $dir */
+  public $dir = "";
+  /** @var Config $config */
+  private $config = null;
+  /** @var TexterApi $api */
+  private $api = null;
+  /** @var Lang $language */
+  private $language = null;
+  /** @var array $crfts */
+  private $crfts = [];
+  /** @var array $fts */
+  private $fts = [];
+  /** @var AddPlayerPacket $apk */
+  private $apk = null;
+  /** @var RemoveEntityPacket $rpk */
+  private $rpk = null;
 
   /****************************************************************************/
+  /* Public functions */
 
   /**
-   * @return Texter API
+   * TexterApiを取得します
+   * @return TexterApi $this->api
    */
-  public function getAPI(){
-    return TexterAPI::getInstance();
+  public function getApi(): TexterApi{
+    return $this->api;
+  }
+
+  /**
+   * 追加用パケットを取得します
+   * @return AddPlayerPacket $this->apk
+   */
+  public function getAddPacket(){
+    return clone $this->apk;
+  }
+
+  /**
+   * 削除用パケットを取得します
+   * @return RemoveEntityPacket $this->rpk
+   */
+  public function getRemovePacket(){
+    return clone $this->rpk;
+  }
+
+  /**
+   * 文字数制限のための文字数を取得します
+   * @return int
+   */
+  public function getCharaLimit(): int{
+    return (int)$this->config->get("limit");
+  }
+
+  /**
+   * 改行数制限のための改行数を設定します
+   * @return int
+   */
+  public function getFeedLimit(): int{
+    return (int)$this->config->get("feed");
+  }
+
+  /**
+   * ワールド制限のためのワールド名を配列で取得します
+   * @return array
+   */
+  public function getWorldLimit(): array{
+    $worlds = $this->config->get("world");
+    if ($worlds !== false) {
+      return array_flip($worlds);
+    }else {
+      return [];
+    }
   }
 
   /****************************************************************************/
-  /**
-   * Private APIs
-   */
-  /**
-   * API初期化
-   */
-  private function initAPI(){
-    $this->api = new TexterAPI($this);
+  /* PMMP Api */
+
+  public function onLoad(){
+    $this->loadFiles();
+    $this->initApi();
+    $this->checkPath();
+    $this->registerCommands();
+    $this->checkUpdate();
+    $this->setTimezone();
   }
 
-  /**
-   * ファイルチェック
-   */
-  private function checkFiles(){
-    $this->dir    = $this->getDataFolder();
-    $this->extDir = "extensions";
-    $this->conf   = "config.yml";
-    $this->file2  = "crftps.json";
-    $this->file3  = "ftps.json";
+  public function onEnable(){
+    $this->prepareTexts();
+    $listener = new EventListener($this);
+    $this->getServer()->getPluginManager()->registerEvents($listener, $this);
+    $this->getLogger()->info(TF::GREEN.self::NAME." ".self::VERSION." - ".TF::BLUE."\"".self::CODENAME."\" ".TF::GREEN.$this->language->transrateString("on.enable"));
+  }
+
+  /****************************************************************************/
+  /* Private functions */
+
+  private function loadFiles(){
+    $this->dir = $this->getDataFolder();
     //
     if(!file_exists($this->dir)){
       mkdir($this->dir);
     }
-    if(!file_exists($this->dir.$this->extDir)){
-      mkdir($this->dir.$this->extDir);
-    }
-    if(!file_exists($this->dir.$this->conf)){
-      file_put_contents($this->dir.$this->conf, $this->getResource($this->conf));
-    }
-    if(!file_exists($this->dir.$this->file2)){
-      file_put_contents($this->dir.$this->file2, $this->getResource($this->file2));
-    }
-    if(!file_exists($this->dir.$this->file3)){
-      file_put_contents($this->dir.$this->file3, $this->getResource($this->file3));
+    if(!file_exists($this->dir.self::FILE_CONFIG)){
+      file_put_contents($this->dir.self::FILE_CONFIG, $this->getResource(self::FILE_CONFIG));
     }
     // config.yml
-    $this->config = new Config($this->dir.$this->conf, Config::YAML);
-    $this->lang = $this->api->getLanguage();
-    // lang_{$this->lang}.json
-    $this->file1 = "lang_{$this->lang}.json";
-    $this->messages = new Config(__DIR__.DS."..".DS."..".DS."lang".DS.$this->file1, Config::JSON);
-    $this->getLogger()->info("§a".str_replace("{lang}", $this->lang, $this->messages->get("lang.registered")));
-    // checkConfigVersion
-    $newer = 10;
-    if (!$this->config->exists("configVersion") ||
-        $this->config->get("configVersion") < $newer) {
-      $this->getLogger()->notice(str_replace("{newer}", "[{$newer}]", $this->messages->get("config.update")));
+    $this->config = new Config($this->dir.self::FILE_CONFIG, Config::YAML);
+    // Lang
+    $lang = $this->config->get("language");
+    if ($lang !== false) {
+      $this->language = new Lang($this, $lang);
+      $this->getLogger()->info(TF::GREEN.$this->language->transrateString("lang.registered", ["{lang}"], [$lang]));
+    }else {
+      $this->getLogger()->error("Invalid language settings. If you have any questions, please contact the issue.");
     }
-    // crftps.json
-    $this->crftps_file = new Config($this->dir.$this->file2, Config::JSON);
-    $this->crftps = $this->crftps_file->getAll();
-    // ftps.json
-    $this->ftps_file = new Config($this->dir.$this->file3, Config::JSON);
-    $this->ftps = $this->ftps_file->getAll();
-    //
-    $this->curver = str_replace("v", "", self::VERSION);
+    if(!file_exists($this->dir.self::FILE_CRFT)){
+      if (!file_exists($this->dir.self::FILE_CRFTP)) {
+        file_put_contents($this->dir.self::FILE_CRFT, $this->getResource(self::FILE_CRFT));
+      }else {
+        $tmpOld = new Config($this->dir.self::FILE_CRFTP, Config::JSON);
+        $tmpOldData = $tmpOld->getAll();
+        file_put_contents($this->dir.self::FILE_CRFT, []);
+        $tmpNew = new Config($this->dir.self::FILE_CRFT, Config::JSON);
+        $tmpNew->setAll($tmpOldData);
+        $tmpNew->save();
+        unlink($this->dir.self::FILE_CRFTP);
+        $this->getLogger()->info(TF::GREEN.$this->language->transrateString("transfer.crftp"));
+      }
+    }
+    if(!file_exists($this->dir.self::FILE_FT)){
+      if (!file_exists($this->dir.self::FILE_FTP)) {
+        file_put_contents($this->dir.self::FILE_FT, $this->getResource(self::FILE_FT));
+      }else {
+        $tmpOld = new Config($this->dir.self::FILE_FTP, Config::JSON);
+        $tmpOldData = $tmpOld->getAll();
+        file_put_contents($this->dir.self::FILE_FT, []);
+        $tmpNew = new Config($this->dir.self::FILE_FT, Config::JSON);
+        $tmpNew->setAll($tmpOldData);
+        $tmpNew->save();
+        unlink($this->dir.self::FILE_FTP);
+        $this->getLogger()->info(TF::GREEN.$this->language->transrateString("transfer.ftp"));
+      }
+    }
+    // crfts.json
+    $crft_config = new Config($this->dir.self::FILE_CRFT, Config::JSON);
+    $this->crfts = $crft_config->getAll();
+    // fts.json
+    $ft_config = new Config($this->dir.self::FILE_FT, Config::JSON);
+    $this->fts = $ft_config->getAll();
+    // CheckConfigVersion
+    if (!$this->config->exists("configVersion") ||
+        $this->config->get("configVersion") < self::CONFIG_VERSION) {
+      $this->getLogger()->notice($this->language->transrateString("config.update", ["{newer}"], [self::CONFIG_VERSION]));
+    }
   }
 
-  /**
-   * サーバー確認(パス変更の為)
-   */
+  private function initApi(){
+    $this->api = new TexterApi($this);
+  }
+
   private function checkPath(){
     $path = strtolower($this->config->get("path"));
     switch ($path) {
       case 'new':
-        $this->AddEntityPacket = new network\mcpe\protocol\AddPlayerPacket();
-        $this->RemoveEntityPacket = new network\mcpe\protocol\RemoveEntityPacket();
+        $this->apk = new \pocketmine\network\mcpe\protocol\AddPlayerPacket();
+        $this->rpk = new \pocketmine\network\mcpe\protocol\RemoveEntityPacket();
       break;
 
       default:
-        $this->AddEntityPacket = new network\protocol\AddPlayerPacket();
-        $this->RemoveEntityPacket = new network\protocol\RemoveEntityPacket();
+        $this->apk = new \pocketmine\network\protocol\AddPlayerPacket();
+        $this->rpk = new \pocketmine\network\protocol\RemoveEntityPacket();
       break;
     }
   }
 
-  /**
-   * コマンド追加処理
-   */
   private function registerCommands(){
     if ((bool)$this->config->get("canUseCommands")) {
       $map = $this->getServer()->getCommandMap();
@@ -181,207 +259,92 @@ class Main extends PluginBase implements Listener{
         new TxtAdmCommand($this)
       ];
       $map->registerAll(self::NAME, $commands);
-      $this->getLogger()->info("§a".$this->messages->get("commands.registered"));
+      $this->getLogger()->info(TF::GREEN.$this->language->transrateString("commands.registered"));
     }else {
-      $this->getLogger()->info("§c".$this->messages->get("commands.unavailable"));
+      $this->getLogger()->info(TF::RED.$this->language->transrateString("commands.unavailable"));
     }
   }
 
-  /**
-   * アップデート確認
-   */
   private function checkUpdate(){
     if ((bool)$this->config->get("checkUpdate")) {
       try {
-        $async = new checkUpdateTask();
+        $async = new CheckUpdateTask();
         $this->getServer()->getScheduler()->scheduleAsyncTask($async);
-      } catch (Exception $e) {
+      } catch (\Exception $e) {
         $this->getLogger()->warning($e->getMessage());
       }
     }
-    if (strpos($this->curver, "-") !== false) {
-      $this->getLogger()->notice($this->messages->get("version.pre"));
+    if (strpos(self::VERSION, "-") !== false) {
+      $this->getLogger()->notice($this->language->transrateString("version.pre"));
       $this->devmode = true;
     }
   }
 
-  /**
-   * バージョン比較
-   */
-  public function versionCompare($data){
+  public function versionCompare(array $data){
+    $curver = str_replace("v", "", self::VERSION);
     $newver = str_replace("v", "", $data[0]["name"]);
-    if ($this->getDescription()->getVersion() !== $this->curver) {
+    if ($this->getDescription()->getVersion() !== $curver) {
       $this->getLogger()->warning($this->messages->get("version.warning"));
     }
-    if (version_compare($newver, $this->curver, "=")) {
-      $this->getLogger()->notice(str_replace("{curver}", $this->curver, $this->messages->get("update.unnecessary")));
-    }elseif (version_compare($newver, $this->curver, ">")){
-      $this->getLogger()->notice(str_replace(["{newver}", "{curver}"], [$newver, $this->curver], $this->messages->get("update.available.1")));
-      $this->getLogger()->notice($this->messages->get("update.available.2"));
-      $this->getLogger()->notice(str_replace("{url}", $data[0]["html_url"], $this->messages->get("update.available.3")));
+    if (version_compare($newver, $curver, "=")) {
+      $this->getLogger()->notice($this->language->transrateString("update.unnecessary", ["{curver}"], [$curver]));
+    }elseif (version_compare($newver, $curver, ">")){
+      $this->getLogger()->notice($this->language->transrateString("update.available.1", ["{newver}", "{curver}"], [$newver, $curver]));
+      $this->getLogger()->notice($this->language->transrateString("update.available.2"));
+      $this->getLogger()->notice($this->language->transrateString("update.available.3", ["{url}"], [$data[0]["html_url"]]));
     }
   }
 
-  /**
-   * パケット送信準備
-   */
-  private function preparePacket(){
-    foreach ($this->crftps as $v) {
-      $title = str_replace("#", "\n", $v["TITLE"]);
-      $text = isset($v["TEXT"]) ? str_replace("#", "\n", $v["TEXT"]) : "";
-      if (is_null($v["WORLD"]) || $v["WORLD"] === "default"){
-        $v["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
-      }
-      //
-      if ($this->getServer()->loadLevel($v["WORLD"])) {
-        $pos = new Vector3($v["Xvec"], $v["Yvec"], $v["Zvec"]);
-        $this->api->makeCrftp($pos, $title, $text, $v["WORLD"]);
-      }else {
-        $this->getLogger()->notice(str_replace("{world}", $v["WORLD"], $this->messages->get("world.not.exists")));
-      }
-    }
-    foreach ($this->ftps as $v) {
-      $title = str_replace("#", "\n", $v["TITLE"]);
-      $text = isset($v["TEXT"]) ? str_replace("#", "\n", $v["TEXT"]) : "";
-      if (is_null($v["WORLD"]) || $v["WORLD"] === "default"){
-        $v["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
-      }
-      //
-      if ($this->getServer()->loadLevel($v["WORLD"])) {
-        $pos = new Vector3($v["Xvec"], $v["Yvec"], $v["Zvec"]);
-        $this->api->makeFtp($pos, $title, $text, $v["WORLD"], $v["OWNER"]);
-      }else {
-        $this->getLogger()->notice(str_replace("{world}", $v["WORLD"], $this->messages->get("world.not.exists")));
-      }
+  private function setTimezone(){
+    $timezone = $this->config->get("timezone");
+    if ($timezone !== false) {
+      date_default_timezone_set($timezone);
+      $this->getLogger()->info(TF::GREEN.$this->language->transrateString("timezone", ["{zone}"], [$timezone]));
     }
   }
 
-  /**
-   * 拡張ファイル読み込み
-   */
-  private function loadExtentions(){
-    $this->getLogger()->info("§a".$this->messages->get("extension.load"));
-    $dir = $this->dir.$this->extDir.DS;
-    //
-    if ($handle = opendir($dir)) {
-      while (($folder = readdir($handle)) !== false) {
-        if (filetype($path = $dir.$folder) === "dir" &&
-            strpos($folder, '.') === false) {
-          $e_handle = opendir($path.DS);
-          while (($file = readdir($e_handle)) !== false) {
-            if(filetype($filePath = $path.DS.$file) == "file" &&
-               strpos($file, '.php') !== false) {
-              include_once($filePath);
-              if ($this->devmode) $this->getLogger()->info("§7filePath: $filePath");
-              $replace = [".php", "Texter/extensions".DS, "/"];
-              $result = ["", "", "\\"];
-              $classPath = str_replace($replace, $result, strstr($filePath, "Texter/extensions".DS));
-              if ($this->devmode) $this->getLogger()->info("§7classPath: $classPath");
-              try {
-                if (class_exists($classPath, true)) {
-                  $ext = new $classPath($this);
-                  if (get_parent_class($ext) === "Texter\\extensions\\TexterExtension") {
-                    $this->extensions[$ext->getName()] = $ext;
-                    $ext->extDir = $dir.$ext->getName();
-                    $ext->initialize();
-                  }
-                }
-              }catch (\Exception $e) {
-                $this->getLogger()->warning($e->getMessage());
-              }
-            }
-          }
-          closedir($e_handle);
+  private function prepareTexts(){
+    if (!empty($this->crfts)) {
+      foreach ($this->crfts as $value) {
+        $title = isset($value["TITLE"]) ? str_replace("#", "\n", $value["TITLE"]) : "";
+        $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
+        if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
+          $value["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
         }
-      }
-      closedir($handle);
-    }
-  }
-
-  /**
-   * ワールド変更時のdespawn処理
-   *
-   * @param Player $player
-   * @param int $euid
-   */
-  private function removeWorldChangeFtp(Player $player, int $euid){
-    $rpk = clone $this->RemoveEntityPacket;
-    $rpk->entityUniqueId = $euid;
-
-    $player->dataPacket($rpk);
-  }
-
-  /****************************************************************************/
-  /**
-   * PMMPPluginBase APIs
-   */
-  public function onLoad(){
-    $this->initAPI();
-    $this->checkFiles();
-    $this->checkPath();
-    $this->registerCommands();
-    $this->checkUpdate();
-    date_default_timezone_set($this->config->get("timezone"));
-    $this->getLogger()->info("§a".str_replace("{zone}", $this->config->get("timezone"), $this->messages->get("timezone")));
-  }
-
-  public function onEnable(){
-    $this->preparePacket();
-    $this->loadExtentions();
-    $this->getServer()->getPluginManager()->registerEvents($this,$this);
-    $this->getLogger()->info(Color::GREEN.self::NAME." ".self::VERSION." - ".Color::BLUE."\"".self::CODENAME."\" ".Color::GREEN.$this->messages->get("on.enable"));
-  }
-
-  public function onJoin(PlayerJoinEvent $e){
-    $p = $e->getPlayer();
-    $lev = $p->getLevel();
-    $levn = $lev->getName();
-    //
-    $crftps = ($this->api->getCrftps()) ? $this->api->getCrftps() : false;
-    if (isset($crftps[$levn])) {
-      foreach ($crftps[$levn] as $pk) {;
-        $p->dataPacket($pk);
-      }
-    }
-    $ftps = ($this->api->getFtps()) ? $this->api->getFtps() : false;
-    if (isset($ftps[$levn])) {
-      $n = strtolower($p->getName());
-      foreach ($ftps[$levn] as $pk) {
-        if ($n === $pk->owner or $p->isOp()) {
-          $pks = clone $pk;
-          $pks->metadata[4][1] = "[$pks->entityUniqueId] ".$pks->metadata[4][1];
-          $p->dataPacket($pks);
+        //
+        if ($this->getServer()->loadLevel($value["WORLD"])) {
+          $level = $this->getServer()->getLevelByName($value["WORLD"]);
+          $crft = new CRFT($level, $value["Xvec"], $value["Yvec"], $value["Zvec"], $title, $text);
+          if ($crft->failed) {
+            $message = $this->language->transrateString("txt.failed");
+            $this->getLogger()->notice($message);
+          }
         }else {
-          $p->dataPacket($pk);
+          $message = $this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]);
+          $this->getLogger()->notice($message);
         }
       }
     }
-  }
-
-  public function onLevelChange(EntityLevelChangeEvent $e){
-    $p = $e->getEntity();
-    if ($p instanceof Player){
-      $levn = $p->getLevel()->getName();
-      if (($crftps = $this->api->getCrftps()) !== false) {
-        if (isset($crftps[$levn])) {
-          foreach ($crftps[$levn] as $crftp) {
-            $this->removeWorldChangeFtp($p, $crftp->entityUniqueId);
+    if (!empty($this->fts)) {
+      foreach ($this->fts as $value) {
+        $title = isset($value["TITLE"]) ? str_replace("#", "\n", $value["TITLE"]) : "";
+        $text = isset($value["TEXT"]) ? str_replace("#", "\n", $value["TEXT"]) : "";
+        if (is_null($value["WORLD"]) || $value["WORLD"] === "default"){
+          $value["WORLD"] = $this->getServer()->getDefaultLevel()->getName();
+        }
+        //
+        if ($this->getServer()->loadLevel($value["WORLD"])) {
+          $level = $this->getServer()->getLevelByName($value["WORLD"]);
+          $ft = new FT($level, $value["Xvec"], $value["Yvec"], $value["Zvec"], $title, $text, strtolower($value["OWNER"]));
+          if ($ft->failed) {
+            $message = $this->language->transrateString("txt.failed");
+            $this->getLogger()->notice($message);
           }
+        }else {
+          $message = $this->language->transrateString("world.not.exists", ["{world}"], [$value["WORLD"]]);
+          $this->getLogger()->notice($message);
         }
       }
-      if (($ftps = $this->api->getFtps()) !== false) {
-        if (isset($ftps[$levn])) {
-          foreach ($ftps[$levn] as $ftp) {
-            $this->removeWorldChangeFtp($p, $ftp->entityUniqueId);
-          }
-        }
-      }
-      $task = new worldGetTask($this, $p);
-      $this->getServer()->getScheduler()->scheduleDelayedTask($task, 20);
     }
-  }
-
-  public function onDisable(){
-    $this->getLogger()->info(Color::RED.self::NAME." ".$this->messages->get("on.disable"));
   }
 }
