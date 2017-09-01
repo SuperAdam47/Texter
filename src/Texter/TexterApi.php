@@ -1,7 +1,7 @@
 <?php
 
 /**
- * ## To English-speaking countries
+ * ## English
  *
  * Texter, the display FloatingTextPerticle plugin for PocketMine-MP
  * Copyright (c) 2017 yuko fuyutsuki < https://twitter.com/y_fyi >
@@ -12,7 +12,7 @@
  * < http://opensource.org/licenses/mit-license.php >.
  *
  * ---------------------------------------------------------------------
- * ## 日本の方へ
+ * ## 日本語
  *
  * TexterはPocketMine-MP向けのFloatingTextPerticleを表示するプラグインです。
  * Copyright (c) 2017 yuko fuyutsuki < https://twitter.com/y_fyi >
