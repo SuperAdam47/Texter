@@ -335,6 +335,7 @@ abstract class Text{
     $pk = new AddPlayerPacket();
     $pk->uuid = UUID::fromRandom();
     $pk->username = "text";
+    $pk->eid = $this->eid;// for GenisysPro
     $pk->entityUniqueId = $this->eid;
     $pk->entityRuntimeId = $this->eid;// ...huh?
     $pk->item = Item::get(Item::AIR);
@@ -362,6 +363,7 @@ abstract class Text{
    */
   public function getAsRemovePacket(): RemoveEntityPacket{
     $pk = new RemoveEntityPacket();
+    $pk->eid = $this->eid;
     $pk->entityUniqueId = $this->eid;
     return $pk;
   }
