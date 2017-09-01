@@ -9,7 +9,9 @@ use pocketmine\event\{
   entity\EntityLevelChangeEvent};
 
 # Texter
-use Texter\task\WorldGetTask;
+use Texter\task\{
+  WorldGetTask,
+  WorldGetTaskOld};
 use Texter\text\{
   CantRemoveFloatingText as CRFT,
   FloatingText as FT};
@@ -62,8 +64,20 @@ class EventListener implements Listener{
           $ft->sendToPlayer($p, FT::SEND_TYPE_REMOVE);
         }
       }
-      $task = new WorldGetTask($this->main, $p);
-      $this->main->getServer()->getScheduler()->scheduleDelayedTask($task, 20);
+      switch (strtolower($this->main->getServer()->getName())) {
+        case 'pocketmine-mp':
+          $task = new WorldGetTask($this->main, $p);
+          $this->main->getServer()->getScheduler()->scheduleDelayedTask($task, 20);
+        break;
+
+        // NOTE: Confirmed
+        case 'genisyspro':
+        case 'leveryl':
+        default:
+          $task = new WorldGetTaskOld($this->main, $p);
+          $this->main->getServer()->getScheduler()->scheduleDelayedTask($task, 20);
+        break;
+      }
     }
   }
 }
