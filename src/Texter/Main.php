@@ -66,7 +66,7 @@ define("DS", DIRECTORY_SEPARATOR);
 class Main extends PluginBase {
 
   const NAME = "Texter";
-  const VERSION = "v2.2.1";
+  const VERSION = "v2.2.2-b1";
   const CODENAME = "Papilio dehaanii(カラスアゲハ)";
 
   const FILE_CONFIG = "config.yml";
