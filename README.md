@@ -1,5 +1,8 @@
 <img src="/assets/Texter.png" width="400px">
 
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/fuyutsuki/Texter/master/LICENSE)
+[![Github All Releases](https://img.shields.io/github/downloads/fuyutsuki/Texter/total.svg)]()
+
 ## Overview
 Select Language: [English](#eng), [日本語](#jpn)
 
