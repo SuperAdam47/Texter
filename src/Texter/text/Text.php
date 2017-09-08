@@ -338,10 +338,12 @@ abstract class Text{
     $pk->eid = $this->eid;// for GenisysPro
     $pk->entityUniqueId = $this->eid;
     $pk->entityRuntimeId = $this->eid;// ...huh?
+    $x = (float)sprintf('%0.1f', $this->x);
+    $y = (float)sprintf('%0.1f', $this->y);
+    $z = (float)sprintf('%0.1f', $this->z);
+    $pk->position = new Vector3($x, $y, $z);// for 1.2~
+    $pk->motion = new Vector3();
     $pk->item = Item::get(Item::AIR);
-    $pk->x = (float)sprintf('%0.1f', $this->x);
-    $pk->y = (float)sprintf('%0.1f', $this->y);
-    $pk->z = (float)sprintf('%0.1f', $this->z);
     $flags = 0;
     $flags |= 1 << Entity::DATA_FLAG_CAN_SHOW_NAMETAG;
     $flags |= 1 << Entity::DATA_FLAG_ALWAYS_SHOW_NAMETAG;
