@@ -40,8 +40,6 @@ abstract class Text{
   public $z = 0.0;
   /** @var Level $level */
   public $level = null;
-  /** @var Vector3 $pos */
-  public $pos = null;
   /** @var string $title */
   public $title = "";
   /** @var string $text */
@@ -283,7 +281,7 @@ abstract class Text{
    */
   public function setText(string $text): bool{
     $this->text = str_replace("#", "\n", $text);
-    $this->api->saveCrft($this, true);
+    $this->api->saveCrft($this);
     $this->sendToLevel(self::SEND_TYPE_ADD);
     return true;
   }

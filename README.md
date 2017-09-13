@@ -1,7 +1,7 @@
 <img src="/assets/Texter.png" width="400px">
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/fuyutsuki/Texter/master/LICENSE)
-[![Github All Releases](https://img.shields.io/github/downloads/fuyutsuki/Texter/total.svg)]()
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/fuyutsuki/Texter/blob/master/LICENSE)
+[![Github All Releases](https://img.shields.io/github/downloads/fuyutsuki/Texter/total.svg)](https://github.com/fuyutsuki/Texter/releases)
 
 ## Overview
 Select Language: [English](#eng), [日本語](#jpn)
@@ -10,11 +10,9 @@ Select Language: [English](#eng), [日本語](#jpn)
 <a name="eng"></a>
 ## English
 
-<!--
 ## !! Caution !!
 This branch is under development.
 It may have many bugs.
--->
 
 ## Texter
 Texter is plugin that displays and deletes FloatingTextPerticle supported to multi-world.  
@@ -24,7 +22,7 @@ Latest: ver **2.2.2** _Papilio dehaanii(カラスアゲハ)_
 - [x] Multi-language (eng, jpn)
 - [x] Multi-world display
 - [x] MCPE v1.1.x
-- [ ] Minecraft(Bedrock) v1.2.x // TODO
+- [x] Minecraft(Bedrock) v1.2.0.x
 
 ### Commands
 #### General command
@@ -63,10 +61,8 @@ It is output as follows.
 <a name="jpn"></a>
 ## 日本語
 
-<!--
 ## !! 注意 !!
 このブランチは開発中です。多くのバグを含む可能性があります。
--->
 
 ## Texter
 TexterはFloatingTextPerticleを複数ワールドに渡り表示、削除ができるプラグインです。  
@@ -76,7 +72,7 @@ TexterはFloatingTextPerticleを複数ワールドに渡り表示、削除がで
 - [x] 複数言語 (eng, jpn)
 - [x] 複数ワールドの表示
 - [x] MCPE v1.1.x
-- [ ] Minecraft(Bedrockエンジン) v1.2.x // TODO
+- [x] Minecraft(Bedrockエンジン) v1.2.0.x
 
 ### コマンド
 #### 一般用コマンド

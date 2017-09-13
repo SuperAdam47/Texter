@@ -24,7 +24,7 @@ use Texter\language\Lang;
  */
 class FloatingText extends Text{
 
-  /** @var Player $owner */
+  /** @var string $owner */
   public $owner = null;
 
   /**

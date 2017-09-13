@@ -57,11 +57,9 @@ class TxtCommand extends Command{
             case 'a':
               if (!empty($args[1])) { // Title
                 $title = str_replace("#", "\n", $args[1]);
-                $title = TF::clean($title);
                 if (!empty($args[2])) { // Text
                   $texts = array_slice($args, 2);
                   $text = str_replace("#", "\n", implode(" ", $texts));
-                  $text = TF::clean($text);
                 }else {
                   $text = "";
                 }
@@ -71,6 +69,8 @@ class TxtCommand extends Command{
                     $sender->sendMessage(TF::RED . Lang::PREFIX . $message);
                     return true;
                   }
+                  $title = TF::clean($title);
+                  $text = TF::clean($text);
                 }
                 $x = sprintf('%0.1f', $sender->x);
                 $y = sprintf('%0.1f', $sender->y + 1);
